@@ -21,7 +21,7 @@ Date: 12/27/2024
 
 void timer2_classic_init(void);
 void timer2_pwm_init(void);
-void timer2_pwm_set(uint16_t level);
+void timer2_pwm_set(uint8_t level);
 void timer2_enable(void);
 void timer2_disable(void);
 void timer2_nonblocking_delay(uint32_t cycles);

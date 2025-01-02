@@ -43,7 +43,7 @@ static void hardware_init(void) {
 	timer2_pwm_init();
 	timer2_enable();
 
-	timer2_pwm_set(0xFFFF);
+	timer2_pwm_set(0xFF);
 }
 
 
