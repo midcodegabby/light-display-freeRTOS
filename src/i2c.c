@@ -12,27 +12,7 @@ Purpose: configure I2C2 and implement read and write functions
 #include "i2c.h"
 #include "gpio.h"
 #include "nvic.h"
-
-//definitions and register mapping (for STM32)
-#define I2C2 0x40005800
-
-//initialization/control registers
-#define I2C2_CR1 (*((volatile uint32_t *) (I2C2)))
-#define I2C2_CR2 (*((volatile uint32_t *) (I2C2 + 0x04)))
-#define I2C2_TIMINGR (*((volatile uint32_t *) (I2C2 + 0x10)))
-#define I2C2_TIMINGR (*((volatile uint32_t *) (I2C2 + 0x10)))
-#define I2C2_TIMEOUTR (*((volatile uint32_t *) (I2C2 + 0x14)))
-#define I2C2_ISR (*((volatile uint32_t *) (I2C2 + 0x18)))
-#define I2C2_ICR (*((volatile uint32_t *) (I2C2 + 0x1C)))
-
-//data registers
-#define I2C2_RXDR (*((volatile uint32_t *) (I2C2 + 0x24)))
-#define I2C2_TXDR (*((volatile uint32_t *) (I2C2 + 0x28)))
-
-#define TSL2591_ADDRESS 0x29
-
-//timing for 16MHz I2CCLK and 100KHz transmission frequency
-#define I2C2_TIMING_VALS ((0x3<<28)|(0x4<<20)|(0x2<<16)|(0xF<<8)|(0x13))
+#include "tcnt.h"
 
 //initialize I2C2 registers: 100KHz SCL Frequency, 7-bit addressing mode
 void i2c2_init(void) {
@@ -67,7 +47,7 @@ void i2c2_write(uint8_t NBYTES, uint32_t *w_buffer) {
 	}
 
 	//delay for target device to process 2nd data byte
-	for (count = 0; count < 500; count++);
+	timer3_delay_us(500);
 
 	I2C2_CR2 |= (1 << 14); //send STOP condition
 	I2C2_ICR |= (1 << 5); //clear stop flag
@@ -118,14 +98,13 @@ void i2c2_write_read(uint8_t NBYTES, uint32_t *target_reg, uint32_t *r_buffer) {
 	I2C2_ICR |= (1 << 5); //clear stop flag
 }	
 
-//DO THIS BETTER!!!!
 //Use timers to check if the bus goes idle; returns 1 if idle and 0 if not idle
 uint8_t i2c2_check_bus(volatile int count) {
 	I2C2_TIMEOUTR |= (1 << 12); //set TIDLE
 	I2C2_TIMEOUTR |= (0xC3); //25 ms = 0xC3
 	I2C2_TIMEOUTR |= (1 << 15); //enable timeout timer
 	
-	for (count = 0; count < 1440000; count++); //loop for about 30 ms 
+	timer3_delay_us(30000); 	//delay for 30ms
 	 
 	if ((I2C2_ISR >> 12) & 1) {
 		I2C2_ICR &= ~(1 << 12); //clear timout flag
@@ -137,7 +116,7 @@ uint8_t i2c2_check_bus(volatile int count) {
 	return 0; //bus did not go idle
 }
 
-//Function to resolve I2C deadlocks
+//Function to resolve I2C deadlocks - not completed
 void i2c2_resolve_deadlock(void) {
 }
 

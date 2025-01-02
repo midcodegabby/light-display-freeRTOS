@@ -54,7 +54,6 @@ void lcd_all_pixels(void);
 void lcd_x_scroll(void);
 void lcd_y_scroll(void);
 void lcd_clear(void);
-void lcd_fill(uint8_t c);
 void lcd_output_text(lcd_text_buffer_t const buf);
 void lcd_output_pixels(lcd_pixel_buffer_t const buf);
 

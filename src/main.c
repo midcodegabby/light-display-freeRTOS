@@ -37,8 +37,8 @@ static void hardware_init(void) {
 	AIRCR |= (VECTKEY);	//use the VECTKEY to gain write access to the AIRCR register
 	AIRCR &= (NVIC_PriorityGroup_4); //clear bit 10 in AIRCR, resulting in no subpriorities
 
+	timer3_basic_init();
 	gpio_led_init();
-
 	lcd_init();
 }
 

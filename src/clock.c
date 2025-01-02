@@ -18,8 +18,6 @@ void sysclk_init(void) {
 	//set MSI range to 48 MHz
 	RCC_CR &= ~(0xF << 4);
 	RCC_CR |= (0xB << 4);
-
-	for (volatile uint8_t i = 0; i < 8; i++);
 }
 
 //enable HSI16 clock
@@ -44,7 +42,5 @@ void peripheral_clk_init(void) {
 	RCC_APB1ENR1 |= (1 << 22); 	//I2C2 enable
 	RCC_APB1ENR1 |= (1 << 14); 	//SPI2 enable
 	RCC_APB1ENR1 |= (1 << 0); 	//TIM2 enable
-
-
-	for (volatile uint8_t i = 0; i < 8; i++);
+	RCC_APB1ENR1 |= (1 << 1); 	//TIM3 enable
 }
