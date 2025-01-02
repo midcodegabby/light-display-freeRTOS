@@ -1,6 +1,4 @@
 /*
-main.h
-
 Author: Gabriel Rodgers
 Date: 12/26/2024
 */

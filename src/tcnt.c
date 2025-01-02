@@ -14,12 +14,16 @@ Purpose: To control timers/counters
 volatile uint32_t timer2_flag = 0;
 
 //init the timer2 with internal clock, compare mode, and interrupts.
-void timer2_init() {
+void timer2_classic_init() {
     TIM2_CR1 |= (1 << 7);   //enable buffering for auto-reload
     TIM2_PSC = 47;  //prescaler for 1MHz timer frequency
     TIM2_ARR = duration_1s;  
     TIM2_EGR |= (1 << 0); //update registers
     //TIM2_DIER |= (1 << 0); //enable event interrupt
+}
+
+void timer2_pwm_init() {
+    
 }
 
 void timer2_enable() {

@@ -21,14 +21,13 @@ Purpose: To get the LD2 on the Nucleo-L476RG to turn on.
 #define NVIC_PriorityGroup_4 (~(1 << 10))
 
 //task prototypes
-void task1_handler(void *args);
-void task2_handler(void *args);
-
-extern volatile uint32_t timer2_flag;
+void task1_handler(void *args); //handles comms with lux sensor
+void task2_handler(void *args); //handles comms with lcd screen
 
 //This function initializes all the hardware required for the rtos tasks
 static void hardware_init(void) {
 	sysclk_init();
+	hsi_init();
 	peripheral_clk_init();
 	//nvic_enable();		
 	//nvic_priority();	//set interrupts to lowest priority.
@@ -39,7 +38,7 @@ static void hardware_init(void) {
 
 	gpio_led_init();
 
-	timer2_init();
+	timer2_pwm_init();
 	timer2_enable();
 }
 
@@ -70,14 +69,14 @@ int main(void) {
 void task1_handler(void *args) {
 	while(1) {
 		gpio_led_on();
-		//timer2_blocking_delay(duration_1ms*100);
+		
 	}
 }
 
 void task2_handler (void *args) {
 	while(1) {
 		gpio_led_off();
-		//timer2_blocking_delay(duration_1s);
+		
 	}
 }
 /*-----------------------------------------------------------*/

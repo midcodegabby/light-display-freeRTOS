@@ -34,11 +34,17 @@ void hsi_init(void) {
 
 //initialize peripheral clocks: GPIOA/C/F, SYSCFG
 void peripheral_clk_init(void) {
-	RCC_AHB2ENR |= (1 << 0); //GPIOA enable
-	RCC_APB1ENR1 |= (1 << 0); //TIM2 enable
-	//RCC_AHB2ENR |= (1 << 1); //GPIOB enable
-	//RCC_AHB2ENR |= (1 << 2); //GPIOC enable
-	//RCC_APB2ENR |= (1 << 0); //SYSCFG enable
+	RCC_AHB2ENR |= (1 << 0); 	//GPIOA enable
+	RCC_AHB2ENR |= (1 << 1); 	//GPIOB enable
+	RCC_AHB2ENR |= (1 << 2); 	//GPIOC enable
+	//RCC_APB2ENR |= (1 << 0); 	//SYSCFG enable
+
+	RCC_CCIPR |= (1 << 15);	 	//I2C2 clock = HSI 
+
+	RCC_APB1ENR1 |= (1 << 22); 	//I2C2 enable
+	RCC_APB1ENR1 |= (1 << 14); 	//SPI2 enable
+	RCC_APB1ENR1 |= (1 << 0); 	//TIM2 enable
+
 
 	for (volatile uint8_t i = 0; i < 8; i++);
 }
