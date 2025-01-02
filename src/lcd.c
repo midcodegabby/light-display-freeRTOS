@@ -11,27 +11,42 @@ Purpose: Configure and control NOKIA 5110 LCD screen.
 #include "tcnt.h"
 #include "gpio.h"
 
+lcd_command_t _LCD_COMMAND;
+
 void lcd_init(void){
     spi2_init();
+    gpio_lcd_init();    //init RST and D/C pins for LCD
 
     gpio_timer2_ch1_init();     //init timer2 ch1 for LCD
     timer2_pwm_init();
 	timer2_enable();
-	
-    gpio_lcd_init();    //init RST and D/C pins for LCD
-
+    
     lcd_reset();
-
-
-
+    lcd_on();
+    lcd_all_pixels();
+    lcd_backlight_on();
 }
 
 void lcd_on(void){
     lcd_command();
+
+    _LCD_COMMAND = FUNCTION_ON_X_EXTENDED;
+    spi2_write((uint8_t) _LCD_COMMAND);
+
+    //set up optimal settings for LCD display
+    _LCD_COMMAND = TEMPERATURE_COEFF_LOW;
+    spi2_write((uint8_t) _LCD_COMMAND);
+    spi2_write((uint8_t) BIAS(3));
+    spi2_write((uint8_t) VLCD(100));
 }
 
 void lcd_off(void){
     lcd_command();
+
+    //lcd_fill(0x00);       //fill RAM with 0s before powering off
+
+    _LCD_COMMAND = FUNCTION_OFF;
+    spi2_write((uint8_t) _LCD_COMMAND);
 }
 
 void lcd_command(void){
@@ -60,7 +75,12 @@ void lcd_reset(void){
     gpio_lcd_rst(1);    //set RST pin high
 }
 
+void lcd_all_pixels(void){
+    lcd_command();
 
+    _LCD_COMMAND = DISPLAY_ALL;
+    spi2_write((uint8_t) _LCD_COMMAND);
+}
 
 void lcd_x_scroll(void);
 void lcd_y_scroll(void);

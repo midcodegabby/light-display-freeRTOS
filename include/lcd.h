@@ -15,7 +15,7 @@ Date: 12/27/2024
 
 //next 2 commands require EXTENDED instruction set
 #define BIAS(b) ((0x10)|(b))            // 0 <= b <= 7  
-#define VLCD(vop) ((0x80)|(vop))        // 0 <= vop <= ? -> make sure does not go above 8.5V
+#define VLCD(vop) ((0x80)|(vop))        // 0 <= vop <= 127
 
 //typedef enum for all 'magic number' LCD commands (aside from x/y addressing and biasing commands)
 typedef enum {
@@ -50,6 +50,7 @@ void lcd_backlight_on(void);
 void lcd_backlight_off(void);
 void lcd_backlight_set(uint8_t brightness);
 void lcd_reset(void);
+void lcd_all_pixels(void);
 void lcd_x_scroll(void);
 void lcd_y_scroll(void);
 void lcd_clear(void);

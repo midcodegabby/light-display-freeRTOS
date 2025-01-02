@@ -35,7 +35,7 @@ Date: 10/13/2024
 #define GPIOC_AFRL (*((volatile uint32_t *) (GPIOC + 0x20)))
 #define GPIOC_AFRH (*((volatile uint32_t *) (GPIOC + 0x24)))
 
-void gpio_spi_init(void);
+void gpio_spi2_init(void);
 void gpio_timer2_ch1_init(void);
 void gpio_lcd_init(void);
 void gpio_lcd_rst(uint8_t state);

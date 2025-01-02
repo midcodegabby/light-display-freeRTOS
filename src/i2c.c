@@ -54,7 +54,7 @@ void i2c2_write(uint8_t NBYTES, uint32_t *w_buffer) {
 	I2C2_CR2 |= (NBYTES << 16); //NBYTES = NBYTES parameter
 
 	//loop until bus is idle
-	volatile uint16_t count = 0;
+	volatile int count = 0;
 	uint8_t timeout = 0xFF;
 	while (timeout != 1) timeout = i2c2_check_bus(count); 
 
@@ -83,7 +83,7 @@ void i2c2_write_read(uint8_t NBYTES, uint32_t *target_reg, uint32_t *r_buffer) {
 	I2C2_CR2 |= (1 << 16); //NBYTES = 1
 	
 	//loop until bus is idle
-	volatile uint16_t count = 0;
+	volatile int count = 0;
 	uint8_t timeout = 0xFF;
 	while (timeout != 1) timeout = i2c2_check_bus(count); 
 
@@ -120,7 +120,7 @@ void i2c2_write_read(uint8_t NBYTES, uint32_t *target_reg, uint32_t *r_buffer) {
 
 //DO THIS BETTER!!!!
 //Use timers to check if the bus goes idle; returns 1 if idle and 0 if not idle
-uint8_t i2c2_check_bus(volatile uint16_t count) {
+uint8_t i2c2_check_bus(volatile int count) {
 	I2C2_TIMEOUTR |= (1 << 12); //set TIDLE
 	I2C2_TIMEOUTR |= (0xC3); //25 ms = 0xC3
 	I2C2_TIMEOUTR |= (1 << 15); //enable timeout timer
