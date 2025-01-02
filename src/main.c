@@ -38,9 +38,12 @@ static void hardware_init(void) {
 
 	gpio_led_init();
 	
+	gpio_timer2_ch1_init();
 
 	timer2_pwm_init();
 	timer2_enable();
+
+	timer2_pwm_set(0xFFFF);
 }
 
 

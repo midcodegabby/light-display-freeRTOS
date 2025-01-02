@@ -22,9 +22,21 @@ void timer2_classic_init(void) {
     TIM2_DIER |= (1 << 0); //enable event interrupt
 }
 
-//init timer2 with 1MHz clock, pwm mode (output to Channel 1).
+//init timer2 with internal clock, pwm mode 1 (output to Channel 1).
 void timer2_pwm_init(void) {
+    TIM2_CR1 |= (1 << 7);   //enable buffering for auto-reload
+    TIM2_ARR = 0xFFFF;  //max value
 
+    TIM2_CCMR1 |= (0x3 << 5); //PWM mode 1 for Channel 1
+    TIM2_CCMR1 |= (1 << 3); //preload enabled for TIM2_CCR1
+    TIM2_CCER |= (1 << 0); //enable TIM2 Channel 1 output
+    TIM2_CCR1 = 0x0;    //pwm set to low.
+
+    TIM2_EGR |= (1 << 0); //update registers
+}
+
+void timer2_pwm_set(uint16_t level) {
+    TIM2_CCR1 = level;
 }
 
 void timer2_enable(void) {
