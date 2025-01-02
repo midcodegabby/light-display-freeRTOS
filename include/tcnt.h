@@ -19,7 +19,8 @@ Date: 12/27/2024
 #define TIM2_ARR (*((volatile uint32_t *) (TIM2 + 0x2C)))
 #define TIM2_CCR1 (*((volatile uint32_t *) (TIM2 + 0x34)))
 
-void timer2_init(void);
+void timer2_classic_init(void);
+void timer2_pwm_init(void);
 void timer2_enable(void);
 void timer2_disable(void);
 void timer2_nonblocking_delay(uint32_t cycles);

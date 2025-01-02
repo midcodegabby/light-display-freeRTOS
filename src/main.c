@@ -37,6 +37,7 @@ static void hardware_init(void) {
 	AIRCR &= (NVIC_PriorityGroup_4); //clear bit 10 in AIRCR, resulting in no subpriorities
 
 	gpio_led_init();
+	
 
 	timer2_pwm_init();
 	timer2_enable();

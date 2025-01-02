@@ -13,24 +13,25 @@ Purpose: To control timers/counters
 
 volatile uint32_t timer2_flag = 0;
 
-//init the timer2 with internal clock, compare mode, and interrupts.
-void timer2_classic_init() {
+//init timer2 with 1MHz clock, regular timer mode, and interrupts.
+void timer2_classic_init(void) {
     TIM2_CR1 |= (1 << 7);   //enable buffering for auto-reload
     TIM2_PSC = 47;  //prescaler for 1MHz timer frequency
     TIM2_ARR = duration_1s;  
     TIM2_EGR |= (1 << 0); //update registers
-    //TIM2_DIER |= (1 << 0); //enable event interrupt
+    TIM2_DIER |= (1 << 0); //enable event interrupt
 }
 
-void timer2_pwm_init() {
-    
+//init timer2 with 1MHz clock, pwm mode (output to Channel 1).
+void timer2_pwm_init(void) {
+
 }
 
-void timer2_enable() {
+void timer2_enable(void) {
     TIM2_CR1 |= (1 << 0); //enable timer/counter
 }
 
-void timer2_disable() {
+void timer2_disable(void) {
     TIM2_CR1 &= ~(1 << 0); //disable timer/counter
 }
 
@@ -46,7 +47,7 @@ void timer2_blocking_delay(uint32_t cycles) {
     TIM2_EGR |= (1 << 0); //update registers
     TIM2_CNT = 0;
 
-    while (TIM2_CNT < cycles);   //loop until duration is reached (995 is the breaking point)
+    while (TIM2_CNT < cycles);  //loop until duration is reached (995 is the breaking point)
 }
 
 // IRQ handler for Timer2 global interrupt
