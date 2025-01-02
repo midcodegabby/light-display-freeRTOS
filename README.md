@@ -19,7 +19,7 @@ make install
 ```
 
 ### Testing
-(youtube link)[youtube.com]   
+[youtube link](youtube.com)   
 
 ### Lessons Learned
 - How to create applications that meet timing requirements using FreeRTOS.  
