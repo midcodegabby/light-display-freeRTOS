@@ -13,6 +13,7 @@ Purpose: To get the LD2 on the Nucleo-L476RG to turn on.
 #include "gpio.h"
 #include "tcnt.h"
 #include "nvic.h"
+#include "lcd.h"
 
 #include <FreeRTOS.h>
 #include <task.h>
@@ -38,10 +39,7 @@ static void hardware_init(void) {
 
 	gpio_led_init();
 
-	timer2_pwm_init();
-	timer2_enable();
-
-	timer2_pwm_set(0xFF);
+	lcd_init();
 }
 
 
