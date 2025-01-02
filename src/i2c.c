@@ -31,28 +31,19 @@ Purpose: configure I2C2 and implement read and write functions
 
 #define TSL2591_ADDRESS 0x29
 
-static uint32_t val = ((0x3<<28)|(0x4<<20)|(0x2<<16)|(0xF<<8)|(0x13));
+//timing for 16MHz I2CCLK and 100KHz transmission frequency
+#define I2C2_TIMING_VALS ((0x3<<28)|(0x4<<20)|(0x2<<16)|(0xF<<8)|(0x13))
 
-//initialize I2C2 registers 
-//I2C2 Settings: 100KHz SCL Frequency, 7-bit addressing mode
+//initialize I2C2 registers: 100KHz SCL Frequency, 7-bit addressing mode
 void i2c2_init(void) {
-	I2C2_CR1 &= ~1; //disable I2C2 Peripheral
+	gpio_i2c2_init(); 	//set up gpio for i2c2
 
-	//enable interrupts here... if I want any
+	I2C2_CR1 &= ~1; //disable I2C2 Peripheral
 	I2C2_CR1 |= (1 << 4); //enable NACK interrupt
 	
-	/*
-	//set up timing for 16MHz I2CCLK and 100KHz transmission frequency (from ST Reference Manual)
-	I2C2_TIMINGR |= (0x3 << 28); //PRESC
-	I2C2_TIMINGR |= (0x4 << 20); //SCLDEL
-	I2C2_TIMINGR |= (0x2 << 16); //SDADEL
-	I2C2_TIMINGR |= (0xF << 8); //SCLH
-	I2C2_TIMINGR |= 0x13; //SCLL
-	*/
-	I2C2_TIMINGR |= val;
+	I2C2_TIMINGR |= I2C2_TIMING_VALS;
 	
 	I2C2_CR2 |= (TSL2591_ADDRESS << 1); //set target address
-
 	I2C2_CR1 |= 1; //enable I2C2 Peripheral
 }
 
@@ -127,6 +118,7 @@ void i2c2_write_read(uint8_t NBYTES, uint32_t *target_reg, uint32_t *r_buffer) {
 	I2C2_ICR |= (1 << 5); //clear stop flag
 }	
 
+//DO THIS BETTER!!!!
 //Use timers to check if the bus goes idle; returns 1 if idle and 0 if not idle
 uint8_t i2c2_check_bus(int count) {
 	I2C2_TIMEOUTR |= (1 << 12); //set TIDLE
@@ -147,14 +139,12 @@ uint8_t i2c2_check_bus(int count) {
 
 //Function to resolve I2C deadlocks
 void i2c2_resolve_deadlock(void) {
-	
 }
-
 
 //IRQ handler for I2C2 event interrupts; for now for NACKs
 void I2C2_EV_IRQHandler(void) {
 	nvic_disable();
-	printf("NACK Detected!!!\n");
+	//do something
 	nvic_enable();
 }
 

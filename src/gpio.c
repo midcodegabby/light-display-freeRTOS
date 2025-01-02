@@ -9,7 +9,7 @@ Purpose: configure GPIOs for I2C2, button input, and LED2
 #include "gpio.h"
 
 //init SPI2: SPI2_NSS-PB9; SPI2_SCLK-PB10; SPI2_MOSI-PC3; SPI2_MISO-PC2
-void gpio_spi_init(void) {
+void gpio_spi2_init(void) {
 	GPIOC_AFRL |= (0x5 << 8)|(0x5 << 12); //AF5 for PC2/PC3
 	GPIOB_AFRH |= (0x5 << 4)|(0x5 << 8);  //AF5 for PB9/PB10
 

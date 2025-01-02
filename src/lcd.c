@@ -9,5 +9,8 @@ Purpose: Configure and control NOKIA 5110 LCD screen.
 #include "lcd.h"
 #include "spi.h"
 #include "tcnt.h"
+#include "gpio.h"
+
+
 
 

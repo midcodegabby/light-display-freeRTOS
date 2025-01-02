@@ -4,7 +4,7 @@ A collection of programs, runnable on STM32L476 devices, to measure and display 
 
 ### Features  
 - Built around FreeRTOS, guaranteeing no light measurements are lost or are not displayed.  
-- LCD driver uses SPI @ 4MHz, guaranteeing quick display of light measurements to LCD screen.  
+- LCD driver uses SPI @ 3MHz, guaranteeing quick display of light measurements to LCD screen.  
 - SPI, I2C, etc. drivers are custom written from scratch in C.  
 
 ### Materials   

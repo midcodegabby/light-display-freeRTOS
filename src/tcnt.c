@@ -24,6 +24,7 @@ void timer2_classic_init(void) {
 
 //init timer2 with internal clock, pwm mode 1 (output to Channel 1).
 void timer2_pwm_init(void) {
+    gpio_timer2_ch1_init(); //init the gpio for ch1 of timer2
     TIM2_CR1 |= (1 << 7);   //enable buffering for auto-reload
     TIM2_ARR = 0xFF;  //max value
 
