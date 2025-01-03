@@ -6,6 +6,8 @@ Date: 12/27/2024
 #ifndef LCD_H_
 #define LCD_H_
 
+#define BITMAP_WIDTH 5
+
 #define LCD_Y_COUNT 6     //# of vertical pixels, grouped in bytes
 #define LCD_X_COUNT 84    //# of horizontal pixels
 
