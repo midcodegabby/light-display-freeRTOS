@@ -11,106 +11,6 @@ Purpose: Configure and control NOKIA 5110 LCD screen.
 #include "tcnt.h"
 #include "gpio.h"
 
-void lcd_init(void){
-    spi2_init();
-    gpio_lcd_init();    //init RST and D/C pins for LCD
-
-    gpio_timer2_ch1_init();     //init timer2 ch1 for LCD
-    timer2_pwm_init();
-    lcd_backlight_on();
-    
-    lcd_reset();
-    lcd_on();
-}
-
-void lcd_on(void){
-    lcd_command();
-
-    spi2_write(LCD_FUNCTION_ON_X_EXTENDED); //select extended instruction set
-
-    spi2_write(LCD_TEMPERATURE_COEFF_LOW);
-    spi2_write(LCD_VOP(54));   
-    spi2_write(LCD_BIAS(4));
-    
-    spi2_write(LCD_FUNCTION_ON_X_BASIC);    //select basic instruction set
-
-    spi2_write(LCD_DISPLAY_NORMAL);
-
-    lcd_clear();
-}
-
-void lcd_off(void){
-    lcd_command();
-
-    lcd_clear();       //fill RAM with 0s before powering off
-
-    spi2_write(LCD_FUNCTION_OFF);
-}
-
-void lcd_command(void){
-    gpio_lcd_dc(0);
-}
-
-void lcd_data(void){
-    gpio_lcd_dc(1);
-}
-
-void lcd_backlight_on(void){
-    timer2_pwm_set(0xFF);
-}
-
-void lcd_backlight_off(void){
-    timer2_pwm_set(0x00);
-}
-
-void lcd_backlight_set(uint8_t brightness){
-    timer2_pwm_set(brightness);
-}
-
-void lcd_reset(void){
-    gpio_lcd_rst(0);    //set RST pin low
-    timer3_delay_us(1);
-    gpio_lcd_rst(1);    //set RST pin high
-}
-
-void lcd_all_pixels(void){
-    lcd_command();
-    spi2_write(LCD_DISPLAY_ALL);
-}
-
-void lcd_clear_pixels(void){
-    lcd_command();
-    spi2_write(LCD_DISPLAY_BLANK);
-}
-
-void lcd_x_scroll(void){
-
-}
-
-void lcd_y_scroll(void){
-
-}
-
-//clear the RAM of the LCD.
-void lcd_clear(void){
-    lcd_command();
-    spi2_write((uint8_t)LCD_SET_Y_ADDRESS(0));
-    spi2_write((uint8_t)LCD_SET_X_ADDRESS(0));
-
-    lcd_data();
-    for (uint8_t y = 0; y < LCD_Y_COUNT*LCD_X_COUNT; y++) {
-        spi2_write(0x11);
-    }
-}
-
-void lcd_output_text(lcd_text_buffer_t const buf){
-
-}
-
-void lcd_output_pixels(lcd_pixel_buffer_t const buf){
-
-}
-
 //define bitmap representation of characters
 static const uint8_t ascii_bitmap[][BITMAP_WIDTH] = {
 {0x00, 0x00, 0x00, 0x00, 0x00}, // '!'
@@ -211,7 +111,7 @@ static const uint8_t ascii_bitmap[][BITMAP_WIDTH] = {
 };
 
 //function to return a pointer to a bitmap array
-static const uint8_t *ascii_to_bitmap(char c) {
+static const uint8_t* ascii_to_bitmap(char c) {
     if (c < ' ' || c > '~'){
         return ascii_bitmap[0];
     }
@@ -220,6 +120,129 @@ static const uint8_t *ascii_to_bitmap(char c) {
         return ascii_bitmap[c - ' '];
     }
 }
+
+static void lcd_command(void){
+    gpio_lcd_dc(0);
+}
+
+static void lcd_data(void){
+    gpio_lcd_dc(1);
+}
+
+static void lcd_reset(void){
+    gpio_lcd_rst(0);    //set RST pin low
+    timer3_delay_us(1);
+    gpio_lcd_rst(1);    //set RST pin high
+}
+
+void lcd_init(void){
+    spi2_init();
+    gpio_lcd_init();    //init RST and D/C pins for LCD
+
+    gpio_timer2_ch1_init();     //init timer2 ch1 for LCD
+    timer2_pwm_init();
+    lcd_backlight_on();
+    
+    lcd_reset();
+    lcd_on();
+}
+
+void lcd_on(void){
+    lcd_command();
+
+    spi2_write(LCD_FUNCTION_ON_X_EXTENDED); //select extended instruction set
+
+    spi2_write(LCD_TEMPERATURE_COEFF_LOW);
+    spi2_write(LCD_VOP(54));   
+    spi2_write(LCD_BIAS(4));
+    
+    spi2_write(LCD_FUNCTION_ON_X_BASIC);    //select basic instruction set
+
+    spi2_write(LCD_DISPLAY_NORMAL);
+
+    lcd_clear();
+}
+
+void lcd_off(void){
+    lcd_command();
+
+    lcd_clear();       //fill RAM with 0s before powering off
+
+    spi2_write(LCD_FUNCTION_OFF);
+}
+
+void lcd_backlight_on(void){
+    timer2_pwm_set(0xFF);
+}
+
+void lcd_backlight_off(void){
+    timer2_pwm_set(0x00);
+}
+
+void lcd_backlight_set(uint8_t brightness){
+    timer2_pwm_set(brightness);
+}
+
+void lcd_all_pixels(void){
+    lcd_command();
+    spi2_write(LCD_DISPLAY_ALL);
+}
+
+void lcd_clear_pixels(void){
+    lcd_command();
+    spi2_write(LCD_DISPLAY_BLANK);
+}
+
+void lcd_x_scroll(void){
+
+}
+
+void lcd_y_scroll(void){
+
+}
+
+//clear the RAM of the LCD.
+void lcd_clear(void){
+    lcd_command();
+    spi2_write((uint8_t)LCD_SET_Y_ADDRESS(0));
+    spi2_write((uint8_t)LCD_SET_X_ADDRESS(0));
+
+    lcd_data();
+    for (uint16_t y = 0; y < LCD_Y_COUNT*LCD_X_COUNT; y++) {
+        spi2_write(0x00);
+    }
+}
+
+void lcd_output_text(lcd_text_buffer_t const buf){
+    lcd_command();
+    spi2_write((uint8_t)LCD_SET_Y_ADDRESS(0));
+    spi2_write((uint8_t)LCD_SET_X_ADDRESS(0));
+
+    char c;
+    lcd_data();
+    for (uint8_t y = 0; y < LCD_Y_COUNT; y++) {     //loop for every byte row
+        for (uint8_t x = 0; buf[y][x] != '\0'; x++){  //loop for every bit column until null terminator is hit
+            c = buf[y][x];
+
+            const uint8_t* ascii_array = ascii_to_bitmap(c);
+            for (uint8_t px = 0; px < 8; px++) {    //loop for every pixel (bit) 
+                if (px < BITMAP_WIDTH) {
+                    spi2_write(ascii_array[px]);
+                }
+                
+                else {
+                    spi2_write(0x00);
+                }
+            }
+        }
+    }
+}
+
+void lcd_output_pixels(lcd_pixel_buffer_t const buf){
+
+}
+
+
 
 
 

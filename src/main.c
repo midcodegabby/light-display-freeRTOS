@@ -40,6 +40,11 @@ static void hardware_init(void) {
 	timer3_basic_init();
 	gpio_led_init();
 	lcd_init();
+
+	char buf5[] = "       LUX";
+	lcd_text_buffer_t lux_text_buffer = {buf5};
+
+	lcd_output_text(lux_text_buffer);
 }
 
 
