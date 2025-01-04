@@ -28,7 +28,7 @@ void task2_handler(void *args); //handles comms with lcd screen
 //This function initializes all the hardware required for the rtos tasks
 static void hardware_init(void) {
 	sysclk_init();
-	hsi_init();
+	//hsi_init();
 	peripheral_clk_init();
 	//nvic_enable();		
 	//nvic_priority();	//set interrupts to lowest priority.
@@ -41,7 +41,7 @@ static void hardware_init(void) {
 	gpio_led_init();
 	lcd_init();
 
-	char buf5[] = "       LUX";
+	char buf5[] = "i";
 	lcd_text_buffer_t lux_text_buffer = {buf5};
 
 	lcd_output_text(lux_text_buffer);

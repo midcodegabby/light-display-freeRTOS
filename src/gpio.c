@@ -33,6 +33,7 @@ void gpio_timer2_ch1_init(void) {
 void gpio_lcd_init(void) {
 	GPIOC_PUPDR |= (1 << 20)|(1 << 22); //pull ups for PC10/PC11
 	GPIOC_MODER &= ~((1 << 21)|(1 << 23)); //general purpose output for PC10/PC11
+	GPIOC_OTYPER |= (1 << 10)|(1 << 11);	//open drain for PC10/PC11
 }
 
 //control lcd reset pin
