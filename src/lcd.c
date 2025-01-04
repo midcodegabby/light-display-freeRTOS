@@ -11,49 +11,40 @@ Purpose: Configure and control NOKIA 5110 LCD screen.
 #include "tcnt.h"
 #include "gpio.h"
 
-static lcd_command_t _LCD_COMMAND;
-
 void lcd_init(void){
     spi2_init();
     gpio_lcd_init();    //init RST and D/C pins for LCD
 
     gpio_timer2_ch1_init();     //init timer2 ch1 for LCD
     timer2_pwm_init();
+    lcd_backlight_on();
     
     lcd_reset();
     lcd_on();
-    //lcd_all_pixels();
-    lcd_clear_pixels();
-    lcd_backlight_on();
-
-    //lcd_clear();
 }
 
 void lcd_on(void){
     lcd_command();
 
-    _LCD_COMMAND = FUNCTION_ON_X_EXTENDED;
-    spi2_write((uint8_t)_LCD_COMMAND);
+    spi2_write(LCD_FUNCTION_ON_X_EXTENDED); //select extended instruction set
 
-    //set up optimal settings for LCD display
-    _LCD_COMMAND = TEMPERATURE_COEFF_LOW;
-    spi2_write((uint8_t)_LCD_COMMAND);
-    spi2_write((uint8_t)BIAS(3));
-    spi2_write((uint8_t)VLCD(100));
-/*
-    //set normal mode for LCD display
-    _LCD_COMMAND = DISPLAY_INVERSE;
-    spi2_write((uint8_t)_LCD_COMMAND);
-*/
+    spi2_write(LCD_TEMPERATURE_COEFF_LOW);
+    spi2_write(LCD_VOP(54));   
+    spi2_write(LCD_BIAS(4));
+    
+    spi2_write(LCD_FUNCTION_ON_X_BASIC);    //select basic instruction set
+
+    spi2_write(LCD_DISPLAY_NORMAL);
+
+    lcd_clear();
 }
 
 void lcd_off(void){
     lcd_command();
 
-    //lcd_clear();       //fill RAM with 0s before powering off
+    lcd_clear();       //fill RAM with 0s before powering off
 
-    _LCD_COMMAND = FUNCTION_OFF;
-    spi2_write((uint8_t)_LCD_COMMAND);
+    spi2_write(LCD_FUNCTION_OFF);
 }
 
 void lcd_command(void){
@@ -78,22 +69,18 @@ void lcd_backlight_set(uint8_t brightness){
 
 void lcd_reset(void){
     gpio_lcd_rst(0);    //set RST pin low
-    timer3_delay_us(5);
+    timer3_delay_us(1);
     gpio_lcd_rst(1);    //set RST pin high
 }
 
 void lcd_all_pixels(void){
     lcd_command();
-
-    _LCD_COMMAND = DISPLAY_ALL;
-    spi2_write((uint8_t)_LCD_COMMAND);
+    spi2_write(LCD_DISPLAY_ALL);
 }
 
 void lcd_clear_pixels(void){
     lcd_command();
-
-    _LCD_COMMAND = DISPLAY_BLANK;
-    spi2_write((uint8_t)_LCD_COMMAND);
+    spi2_write(LCD_DISPLAY_BLANK);
 }
 
 void lcd_x_scroll(void){
@@ -107,18 +94,12 @@ void lcd_y_scroll(void){
 //clear the RAM of the LCD.
 void lcd_clear(void){
     lcd_command();
-    spi2_write((uint8_t)SET_Y_ADDRESS(0));
-    spi2_write((uint8_t)SET_X_ADDRESS(0));
+    spi2_write((uint8_t)LCD_SET_Y_ADDRESS(0));
+    spi2_write((uint8_t)LCD_SET_X_ADDRESS(0));
 
     lcd_data();
-
-    //loop for all byte rows on the LCD 
-    for (uint8_t y = 0; y < LCD_Y_COUNT; y++) {
-
-        //loop for all columns on one row on the LCD
-        for (uint8_t x = 0; x < LCD_X_COUNT; x++) {
-            spi2_write(0x00);
-        }
+    for (uint8_t y = 0; y < LCD_Y_COUNT*LCD_X_COUNT; y++) {
+        spi2_write(0x11);
     }
 }
 
