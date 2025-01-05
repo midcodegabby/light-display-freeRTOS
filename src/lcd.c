@@ -150,10 +150,10 @@ void lcd_init(void){
 
     //lcd_all_pixels();
     //TESTING FOR SPACING
-    lcd_data();
-    spi2_write(0xFF);
-    spi2_write(0x11);
-    spi2_write(0xFF);
+    //lcd_data();
+    //spi2_write(0xFF);
+    //spi2_write(0x11);
+    //spi2_write(0xFF);
     
 }
 

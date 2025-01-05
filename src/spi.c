@@ -28,14 +28,6 @@ void spi2_init(void) {
 
 //write a single byte to MOSI using SPI2
 void spi2_write(uint8_t data) {
-
-    while (!(SPI2_SR & 0x2));     //wait for TXE flag to be set (transmit buffer empty); but wait! this could be causing empty bytes to be sent!!!
-    SPI2_DR = (data << 8) | data;
-
-
-/*
-    SPI2_CR1 |= (1 << 6);     //enable SPI2
-    SPI2_DR = data << 8;
-    SPI2_CR1 &= ~(1 << 6);    //disable SPI2
-*/
+    while (!(SPI2_SR & 0x2));     //wait for TXE flag to be set (transmit buffer empty)
+    SPI2_DR = data;
 }
