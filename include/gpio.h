@@ -15,6 +15,7 @@ Date: 10/13/2024
 #define GPIOA_OSPEEDR (*((volatile uint32_t *) (GPIOA + 0x8)))
 #define GPIOA_PUPDR (*((volatile uint32_t *) (GPIOA + 0xC)))
 #define GPIOA_ODR (*((volatile uint32_t *) (GPIOA + 0x14)))
+#define GPIOA_BSRR (*((volatile uint32_t *) (GPIOA + 0x18)))
 #define GPIOA_AFRL (*((volatile uint32_t *) (GPIOA + 0x20)))
 #define GPIOA_AFRH (*((volatile uint32_t *) (GPIOA + 0x24)))
 
@@ -23,6 +24,7 @@ Date: 10/13/2024
 #define GPIOB_OSPEEDR (*((volatile uint32_t *) (GPIOB + 0x8)))
 #define GPIOB_PUPDR (*((volatile uint32_t *) (GPIOB + 0xC)))
 #define GPIOB_IDR (*((volatile uint32_t *) (GPIOB + 0x10)))
+#define GPIOB_BSRR (*((volatile uint32_t *) (GPIOB + 0x18)))
 #define GPIOB_AFRL (*((volatile uint32_t *) (GPIOB + 0x20)))
 #define GPIOB_AFRH (*((volatile uint32_t *) (GPIOB + 0x24)))
 
@@ -32,6 +34,7 @@ Date: 10/13/2024
 #define GPIOC_PUPDR (*((volatile uint32_t *) (GPIOC + 0x0C)))
 #define GPIOC_IDR (*((volatile uint32_t *) (GPIOC + 0x10)))
 #define GPIOC_ODR (*((volatile uint32_t *) (GPIOC + 0x14)))
+#define GPIOC_BSRR (*((volatile uint32_t *) (GPIOC + 0x18)))
 #define GPIOC_AFRL (*((volatile uint32_t *) (GPIOC + 0x20)))
 #define GPIOC_AFRH (*((volatile uint32_t *) (GPIOC + 0x24)))
 

@@ -31,29 +31,30 @@ void gpio_timer2_ch1_init(void) {
 
 //init lcd reset and data/command pins
 void gpio_lcd_init(void) {
-	GPIOC_PUPDR |= (1 << 20)|(1 << 22); //pull ups for PC10/PC11
+	//GPIOC_PUPDR |= (1 << 20)|(1 << 22); //pull ups for PC10/PC11
 	//GPIOC_PUPDR |= (1 << 21)|(1 << 23); //pull downs for PC10/PC11
 	GPIOC_MODER &= ~((1 << 21)|(1 << 23)); //general purpose output for PC10/PC11
-	GPIOC_OTYPER |= (1 << 10)|(1 << 11);	//open drain for PC10/PC11
+	GPIOC_OSPEEDR |= (0x3 << 20)|(0x3 << 22); //very high speed for PC10/PC11
+	//GPIOC_OTYPER |= (0x3 << 10); //open drain for PC10/PC11
 }
 
 //control lcd reset pin
 void gpio_lcd_rst(uint8_t state) {
 	if (state == 0){
-		GPIOC_ODR &= ~(1 << 11);
+		GPIOC_BSRR |= (1 << 27);
 	}
 	else {
-		GPIOC_ODR |= (1 << 11);
+		GPIOC_BSRR |= (1 << 11);
 	}
 }
 
 //control lcd command/data pin - LOW=command, HIGH=data
 void gpio_lcd_dc(uint8_t state) {
 	if (state == 0){
-		GPIOC_ODR &= ~(1 << 10);
+		GPIOC_BSRR |= (1 << 26);
 	}
 	else {
-		GPIOC_ODR |= (1 << 10);
+		GPIOC_BSRR |= (1 << 10);
 	}
 }
 
@@ -88,11 +89,11 @@ void gpio_led_init(void) {
 }
 
 void gpio_led_on(void) {
-	GPIOA_ODR |= (1 << 5); 
+	GPIOA_BSRR |= (1 << 5); 
 }
 
 void gpio_led_off(void) {
-	GPIOA_ODR &= ~(1 << 5); 
+	GPIOA_BSRR |= (1 << 21); 
 }
 
 void gpio_led_toggle(void) {

@@ -11,7 +11,7 @@ Purpose: Configure and control NOKIA 5110 LCD screen.
 #include "tcnt.h"
 #include "gpio.h"
 
-//define bitmap representation of characters
+//define bitmap representation of characters (5x8 pixels each)
 static const uint8_t ascii_bitmap[][BITMAP_WIDTH] = {
     { 0x00, 0x00, 0x00, 0x00, 0x00 },  // 20  32
     { 0x00, 0x00, 0x9E, 0x00, 0x00 },  // 21  33  !
@@ -112,12 +112,12 @@ static const uint8_t ascii_bitmap[][BITMAP_WIDTH] = {
 
 //function to return a pointer to a bitmap array
 static const uint8_t* ascii_to_bitmap(char c) {
-    if ((c < ' ') || (c > '~')){
-        return ascii_bitmap[0];
+    if ((c < ' ') || (c > '~')){    //if char not supported return space
+        return ascii_bitmap[0]; 
     }
     
     else {
-        return ascii_bitmap[c - ' '];
+        return ascii_bitmap[c - ' '];   //if char supported return it
     }
 }
 
@@ -128,7 +128,7 @@ static void lcd_command(void){
 
 static void lcd_data(void){
     gpio_lcd_dc(1);
-    timer3_delay_us(100000);
+    //timer3_delay_us(10);
 }
 
 static void lcd_reset(void){
@@ -149,12 +149,15 @@ void lcd_init(void){
     lcd_on();
 
     //lcd_all_pixels();
-    //TESTING FOR SPACING
+
+    //lcd_command();
+    //spi2_write(LCD_SET_Y_ADDRESS(5));
+    //spi2_write(LCD_SET_X_ADDRESS(4));
+    
     //lcd_data();
     //spi2_write(0xFF);
     //spi2_write(0x11);
     //spi2_write(0xFF);
-    
 }
 
 void lcd_on(void){
@@ -175,9 +178,7 @@ void lcd_on(void){
 
 void lcd_off(void){
     lcd_command();
-
     lcd_clear();       //fill RAM with 0s before powering off
-
     spi2_write(LCD_FUNCTION_OFF);
 }
 
@@ -225,17 +226,26 @@ void lcd_clear(void){
 
 void lcd_output_text(lcd_text_buffer_t const buf){
 
+    //lcd_command();
+    //spi2_write(LCD_SET_Y_ADDRESS(5));
+    //spi2_write(LCD_SET_X_ADDRESS(4));
+
     char c;
     for (uint8_t y = 0; y < LCD_Y_COUNT; y++) {     //loop for every byte row
+
         for (uint8_t x = 0; buf[y][x] != '\0'; x++){  //loop for every bit column until null terminator is hit
             
             c = buf[y][x];
             const uint8_t* ascii_array = ascii_to_bitmap(c);    //convert each char to an array of bytes representing pixels
 
-            for (uint8_t column = 0; column < 5; column++){
-
-                lcd_data();
-                spi2_write(ascii_array[column]);
+            for (uint8_t column = 0; column < 6; column++){
+                if (column < BITMAP_WIDTH) {
+                    lcd_data();
+                    spi2_write(ascii_array[column]);
+                }
+                else {  //this section adds a space between each character
+                    spi2_write(0x00);
+                }
             }
         }
     }

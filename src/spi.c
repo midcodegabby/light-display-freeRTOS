@@ -19,8 +19,6 @@ void spi2_init(void) {
     SPI2_CR1 |= (1 << 2);     //configure STM32 as master
 
     SPI2_CR2 |= (0x7 << 8);   //8-bit data size
-    //SPI2_CR2 |= (1 << 2);     //set SS enable - pulls SS low while SPI2 is enabled (single master)
-
     SPI2_CR2 |= (1 << 3);     //set NSS pulse enable 
 
     SPI2_CR1 |= (1 << 6);     //enable SPI2
@@ -28,6 +26,6 @@ void spi2_init(void) {
 
 //write a single byte to MOSI using SPI2
 void spi2_write(uint8_t data) {
-    while (!(SPI2_SR & 0x2));     //wait for TXE flag to be set (transmit buffer empty)
     SPI2_DR = data;
+    while (!(SPI2_SR & 0x2));     //wait for TXE flag to be set (transmit buffer empty)
 }
