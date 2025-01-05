@@ -41,7 +41,7 @@ static void hardware_init(void) {
 	gpio_led_init();
 	lcd_init();
 	
-	char buf5[] = "abcdefg";
+	char buf5[] = "blah - blah 370";
 	lcd_text_buffer_t lux_text_buffer = {buf5};
 
 	lcd_output_text(lux_text_buffer);
