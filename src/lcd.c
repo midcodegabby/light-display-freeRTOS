@@ -123,10 +123,12 @@ static const uint8_t* ascii_to_bitmap(char c) {
 
 static void lcd_command(void){
     gpio_lcd_dc(0);
+    timer3_delay_us(10);    //need for signal settling to LOW
 }
 
 static void lcd_data(void){
     gpio_lcd_dc(1);
+    timer3_delay_us(100000);
 }
 
 static void lcd_reset(void){
@@ -147,6 +149,12 @@ void lcd_init(void){
     lcd_on();
 
     //lcd_all_pixels();
+    //TESTING FOR SPACING
+    lcd_data();
+    spi2_write(0xFF);
+    spi2_write(0x11);
+    spi2_write(0xFF);
+    
 }
 
 void lcd_on(void){
@@ -216,18 +224,7 @@ void lcd_clear(void){
 }
 
 void lcd_output_text(lcd_text_buffer_t const buf){
-    lcd_command();
-    timer3_delay_us(50000);
-    spi2_write(LCD_SET_Y_ADDRESS(2));
-    //spi2_write(0xFF);
-    //spi2_write(LCD_SET_X_ADDRESS(53));
 
-    lcd_data();
-    spi2_write(0xFF);
-    spi2_write(0x11);
-    spi2_write(0xFF);
-
-/*
     char c;
     for (uint8_t y = 0; y < LCD_Y_COUNT; y++) {     //loop for every byte row
         for (uint8_t x = 0; buf[y][x] != '\0'; x++){  //loop for every bit column until null terminator is hit
@@ -242,7 +239,6 @@ void lcd_output_text(lcd_text_buffer_t const buf){
             }
         }
     }
-*/
 }
 
 void lcd_output_pixels(lcd_pixel_buffer_t const buf){
