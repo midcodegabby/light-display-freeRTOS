@@ -4,8 +4,8 @@ ENTRY(Reset_Handler)
 _estack = 0x20018000;
 
 /*define min size for the heap and the stack*/
-_Min_Heap_Size = 0x400;
-_Min_Stack_Size = 0x200;
+_Min_Heap_Size = 0x2000;
+_Min_Stack_Size = 0x800;
 
 MEMORY
 {

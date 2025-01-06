@@ -37,7 +37,7 @@ void peripheral_clk_init(void) {
 	RCC_AHB2ENR |= (1 << 0); 	//GPIOA enable
 	RCC_AHB2ENR |= (1 << 1); 	//GPIOB enable
 	RCC_AHB2ENR |= (1 << 2); 	//GPIOC enable
-	//RCC_APB2ENR |= (1 << 0); 	//SYSCFG enable
+	RCC_APB2ENR |= (1 << 0); 	//SYSCFG enable
 
 	RCC_CCIPR |= (1 << 15);	 	//I2C2 clock = HSI 
 
