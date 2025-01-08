@@ -13,7 +13,7 @@ Purpose: To control timers/counters
 
 //init timer3 with 1MHz clock, regular timer mode, and interrupts.
 void timer3_basic_init(void) {
-    TIM3_CR1 |= (1 << 7);   //enae ble buffering for auto-reload
+    TIM3_CR1 |= (1 << 7);   //enable buffering for auto-reload
     TIM3_PSC = 47;  //prescaler for 1MHz timer frequency
     TIM3_ARR = 0xFFFF;  //set as max value
     TIM3_EGR |= (1 << 0); //update registers

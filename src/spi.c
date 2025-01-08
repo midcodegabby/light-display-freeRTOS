@@ -8,6 +8,7 @@ Purpose: Configure SPI communications as well as provide write functions.
 
 #include "spi.h"
 #include "gpio.h"
+#include "tcnt.h"
 
 //initialize SPI2
 void spi2_init(void) {
@@ -28,4 +29,5 @@ void spi2_init(void) {
 void spi2_write(uint8_t data) {
     SPI2_DR = data;
     while (!(SPI2_SR & 0x2));     //wait for TXE flag to be set (transmit buffer empty)
+    timer3_delay_us(10);
 }

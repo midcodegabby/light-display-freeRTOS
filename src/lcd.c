@@ -123,17 +123,16 @@ static const uint8_t* ascii_to_bitmap(char c) {
 
 static void lcd_command(void){
     gpio_lcd_dc(0);
-    timer3_delay_us(10);    //need for signal settling to LOW
+    //timer3_delay_us(10);    //need for signal settling to LOW
 }
 
 static void lcd_data(void){
     gpio_lcd_dc(1);
-    //timer3_delay_us(10);
 }
 
 static void lcd_reset(void){
     gpio_lcd_rst(0);    //set RST pin low
-    timer3_delay_us(1);
+    timer3_delay_us(10);
     gpio_lcd_rst(1);    //set RST pin high
 }
 
@@ -149,15 +148,17 @@ void lcd_init(void){
     lcd_on();
 
     //lcd_all_pixels();
+/*
+    lcd_command();
+    spi2_write(LCD_SET_Y_ADDRESS(5));
+    spi2_write(LCD_SET_X_ADDRESS(20));
 
-    //lcd_command();
-    //spi2_write(LCD_SET_Y_ADDRESS(5));
-    //spi2_write(LCD_SET_X_ADDRESS(4));
-    
-    //lcd_data();
-    //spi2_write(0xFF);
-    //spi2_write(0x11);
-    //spi2_write(0xFF);
+    lcd_data();
+    spi2_write(0xFF);
+    spi2_write(0x11);
+    spi2_write(0xFF);
+*/
+//works with lcd_command reasserted
 }
 
 void lcd_on(void){
@@ -226,9 +227,9 @@ void lcd_clear(void){
 
 void lcd_output_text(lcd_text_buffer_t const buf){
 
-    //lcd_command();
-    //spi2_write(LCD_SET_Y_ADDRESS(5));
-    //spi2_write(LCD_SET_X_ADDRESS(4));
+    lcd_command();
+    spi2_write(LCD_SET_X_ADDRESS(4));
+    spi2_write(LCD_SET_Y_ADDRESS(5));
 
     char c;
     for (uint8_t y = 0; y < LCD_Y_COUNT; y++) {     //loop for every byte row
