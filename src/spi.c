@@ -20,7 +20,7 @@ void spi2_init(void) {
     SPI2_CR1 |= (1 << 2);     //configure STM32 as master
 
     SPI2_CR2 |= (0x7 << 8);   //8-bit data size
-    SPI2_CR2 |= (1 << 3);     //set NSS pulse enable 
+    SPI2_CR2 |= (1 << 3);     //set NSS pulse enable - pulses NSS every time SCLK starts
 
     SPI2_CR1 |= (1 << 6);     //enable SPI2
 }

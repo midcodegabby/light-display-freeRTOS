@@ -203,10 +203,6 @@ void lcd_y_scroll(void){
 
 //clear the RAM of the LCD.
 void lcd_clear(void){
-    lcd_command();
-    spi2_write(LCD_SET_Y_ADDRESS(0));
-    spi2_write(LCD_SET_X_ADDRESS(0));
-
     lcd_data();
     for (uint16_t y = 0; y < LCD_Y_COUNT*LCD_X_COUNT; y++) {
         spi2_write(0x00);
@@ -214,13 +210,10 @@ void lcd_clear(void){
 }
 
 void lcd_output_text(lcd_text_buffer_t const buf){
-
-    lcd_command();
-    spi2_write(LCD_SET_X_ADDRESS(4));
-    spi2_write(LCD_SET_Y_ADDRESS(5));
-
     char c;
     for (uint8_t y = 0; y < LCD_Y_COUNT; y++) {     //loop for every byte row
+        lcd_command();
+        spi2_write(LCD_SET_Y_ADDRESS(y));   //set y address to equal the index of the array of the current string
 
         for (uint8_t x = 0; buf[y][x] != '\0'; x++){  //loop for every bit column until null terminator is hit
             

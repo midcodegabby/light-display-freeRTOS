@@ -3,8 +3,11 @@ Author: Gabriel Rodgers
 Date: 12/30/2024
 */
 
-#ifndef TSL2591_FUNCTIONS_H_
-#define TSL2591_FUNCTIONS_H_
+#ifndef TSL2591_FUNCTIONS_H
+#define TSL2591_FUNCTIONS_H
+
+#define TSL2591_DATA_REGISTER (0xB4)
+#define TSL2591_INIT_MESSAGE ((0xA0 << 8)|(0x03))
 
 //enumerations to avoid magic numbers
 //Integration time
@@ -26,6 +29,6 @@ typedef enum {
 } again_t;
 
 void tsl2591_write_settings(again_t AGAIN, atime_t ATIME);
-float rawdata_to_lux(uint32_t raw_data, again_t AGAIN, atime_t ATIME);
+uint32_t rawdata_to_lux(uint32_t raw_data, again_t AGAIN, atime_t ATIME);
 
-#endif /* TSL2591_FUNCTIONS_H_ */
+#endif /* TSL2591_FUNCTIONS_H */

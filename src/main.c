@@ -15,6 +15,8 @@ Purpose: To get the LD2 on the Nucleo-L476RG to turn on.
 #include "nvic.h"
 #include "lcd.h"
 #include "exti.h"
+#include "i2c.h"
+#include "tsl2591_functions.h"
 
 #include <FreeRTOS.h>
 #include <task.h>
@@ -32,7 +34,7 @@ void task3_handler(void *args); //handles button pushes
 //This function initializes all the hardware required for the rtos tasks
 static void hardware_init(void) {
 	sysclk_init();
-	//hsi_init();
+	hsi_init();
 	peripheral_clk_init();
 	nvic_enable();		
 	nvic_priority();	//set interrupts to lowest priority.
@@ -46,9 +48,28 @@ static void hardware_init(void) {
 	timer3_basic_init();
 	gpio_led_init();
 	lcd_init();
-	
-	char buf5[] = "Oscope Test";
-	lcd_text_buffer_t lux_text_buffer = {buf5};
+	i2c2_init();
+
+	uint32_t raw_data;
+	uint32_t lux_data;
+
+	uint32_t w_buf = TSL2591_INIT_MESSAGE;
+	uint32_t data_reg = TSL2591_DATA_REGISTER;
+
+	i2c2_write(2, &w_buf);
+	tsl2591_write_settings(again_low, atime_100ms);
+
+	i2c2_write_read(4, &data_reg, &raw_data);
+	lux_data = rawdata_to_lux(raw_data, again_low, atime_100ms);
+
+	char lux_buf[] = "              ";	//init an empty buffer for lux measurements. -> has size [15] (added null term)
+	snprintf(lux_buf, 15, "%lu            ", lux_data);
+
+	lux_buf[11] = 'L';
+	lux_buf[12] = 'U';
+	lux_buf[13] = 'X';
+
+	lcd_text_buffer_t lux_text_buffer = {lux_buf};
 
 	lcd_output_text(lux_text_buffer);
 }
@@ -80,19 +101,36 @@ int main(void) {
 /*---------------------------TASKS---------------------------*/
 /*-----------------------------------------------------------*/
 void task1_handler(void *args) {
+	
+
 	while(1) {
-		gpio_led_on();
+		/*
+		i2c2_write_read(4, &data_reg, &raw_data);
+		lux_data = rawdata_to_lux(raw_data, _AGAIN, _ATIME);
+		*/
 		
 	}
 }
 
 void task2_handler (void *args) {
+	char lux_buf[] = "              ";	//init an empty buffer for lux measurements. -> has size [15] (14 + \0)
+
 	while(1) {
-		gpio_led_off();
-		
+		/*
+		snprintf(lux_buf, 15, "%d              ", lux_data);
+
+		lux_buf[11] = 'L';
+		lux_buf[12] = 'U';
+		lux_buf[13] = 'X';
+
+		lcd_text_buffer_t lux_text_buffer = {lux_buf};
+
+		lcd_output_text(lux_text_buffer);
+		*/
 	}
 }
 
+//this task handles misc operations like button presses
 void task3_handler (void *args) {
 	uint8_t lcd_backlight_brightness = 0xFF;
 

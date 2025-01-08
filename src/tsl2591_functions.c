@@ -24,7 +24,7 @@ void tsl2591_write_settings(again_t AGAIN, atime_t ATIME) {
 }
 
 //return the light data in units of LUX
-float rawdata_to_lux(uint32_t raw_data, again_t AGAIN, atime_t ATIME) {
+uint32_t rawdata_to_lux(uint32_t raw_data, again_t AGAIN, atime_t ATIME) {
 	//raw_data is big-endian: high 2 bytes are CH1, low 2 bytes are CH0
 	uint16_t ch0 = raw_data & 0xFFFF;
 	uint16_t ch1 = (raw_data >> 16) & 0xFFFF;
@@ -88,5 +88,5 @@ float rawdata_to_lux(uint32_t raw_data, again_t AGAIN, atime_t ATIME) {
 		else if (lux_data < 300.0F) return lux_data*0.8F;
 		else return lux_data;
 	}
-	return lux_data;
+	return ((uint32_t) lux_data);
 }
