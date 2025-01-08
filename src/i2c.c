@@ -100,20 +100,22 @@ void i2c2_write_read(uint8_t NBYTES, const uint16_t target_reg, uint32_t *r_buff
 
 //Use timers to check if the bus goes idle; returns 1 if idle and 0 if not idle
 uint8_t i2c2_check_bus(void) {
-	I2C2_TIMEOUTR |= (1 << 12); //set TIDLE
-	I2C2_TIMEOUTR |= (0xC3); //25 ms = 0xC3
-	I2C2_TIMEOUTR |= (1 << 15); //enable timeout timer
 	
-	timer3_delay_us(30000); 	//delay for 30ms
+	I2C2_TIMEOUTR |= (1 << 12); //set TIDLE - detect when SCL and SDA are high for a set period
+	I2C2_TIMEOUTR |= (0xC7); //50us max tidle = 0xC7; for 10us do 0x28
+	I2C2_TIMEOUTR |= (1 << 15); //enable timeout timer
+
+	timer3_delay_us(50); 	//delay for 50us - or whatever setting you used for tidle
 	 
-	if ((I2C2_ISR >> 12) & 1) {
-		I2C2_ICR &= ~(1 << 12); //clear timout flag
+	if ((I2C2_ISR >> 12) & 1) {	
 		I2C2_TIMEOUTR &= ~(1 << 15); //disable timout timer
 		return 1; //bus went idle
 	}
-			
-	I2C2_TIMEOUTR &= ~(1 << 15); //disable timout timer
-	return 0; //bus did not go idle
+
+	else {
+		I2C2_TIMEOUTR &= ~(1 << 15); //disable timout timer
+		return 0; //bus did not go idle
+	}
 }
 
 //Function to resolve I2C deadlocks - not completed
