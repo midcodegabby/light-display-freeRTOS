@@ -61,10 +61,10 @@ From this arrangement, I was able to capture the following two events:
 ![oscope-dc-falling-edge](https://github.com/user-attachments/assets/b77ba026-55cb-43b8-be9b-3ffe74f57760)
   
   
-Upon removing this code snippet from `lcd_on()`, the last function call invoked for the lcd screen is `lcd_clear`, which sends  
-504 bytes of `0x00` to the lcd screen via SPI to clear it's RAM. I captured an image of the SPI bus signal (as well as MOSI's decoded value) that   
+Upon removing this code snippet from `lcd_on()`, the last function call invoked for the LCD screen is `lcd_clear`, which sends  
+504 bytes of `0x00` to the LCD screen via SPI to clear it's RAM. I captured an image of the SPI bus signal (as well as MOSI's decoded value) that   
 was caused by this code below. Note that this image (and the next) were captured using the trigger set on the falling edge of the SS signal.  
-###### SPI bus state during a lcd_clear() call:   
+###### SPI bus state during a `lcd_clear()` call:   
 ![oscope-lcd_clear()](https://github.com/user-attachments/assets/5d77aa18-8ba8-4637-aff3-514bc7962348)
 - note how you can see the 0x00's in MOSI. This confirms that the microcontroller is correctly clearing the LCD controller's RAM.   
 
