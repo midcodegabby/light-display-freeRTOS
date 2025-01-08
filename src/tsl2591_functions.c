@@ -12,19 +12,19 @@ Purpose: Implement functions to operate on raw tsl2591 data
 #include "i2c.h"
 
 //var definitions
-#define TSL2591_CTRL 0xA1
+#define TSL2591_CTRL 0xA1U
 #define TSL2591_LUX_DF 408.0F
 #define TSL2591_LUX_C_CH0 1.64F 
 #define TSL2591_LUX_C_CH1 0.59F
 
 //set the gain and integration time
 void tsl2591_write_settings(again_t AGAIN, atime_t ATIME) {
-	uint32_t data = (TSL2591_CTRL << 8) | (AGAIN) | (ATIME);
-	i2c2_write(2, &data);
+	const uint16_t data = ((TSL2591_CTRL << 8)|(AGAIN)|(ATIME));
+	i2c2_write(2, data);
 }
 
 //return the light data in units of LUX
-uint32_t rawdata_to_lux(uint32_t raw_data, again_t AGAIN, atime_t ATIME) {
+uint32_t rawdata_to_lux(const uint32_t raw_data, again_t AGAIN, atime_t ATIME) {
 	//raw_data is big-endian: high 2 bytes are CH1, low 2 bytes are CH0
 	uint16_t ch0 = raw_data & 0xFFFF;
 	uint16_t ch1 = (raw_data >> 16) & 0xFFFF;

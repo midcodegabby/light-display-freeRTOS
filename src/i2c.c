@@ -28,7 +28,7 @@ void i2c2_init(void) {
 }
 
 //write to the target; this function only allows up to 2 bytes of data transmission at once
-void i2c2_write(uint8_t NBYTES, uint32_t *w_buffer) {
+void i2c2_write(uint8_t NBYTES, const uint16_t w_buffer) {
 	I2C2_CR2 &= ~(1 << 10); //set to Write
 	I2C2_CR2 &= ~(0xFF << 16); //clear NBYTES; if this is not done then sometimes no stop condition
 	I2C2_CR2 |= (NBYTES << 16); //NBYTES = NBYTES parameter
@@ -36,14 +36,14 @@ void i2c2_write(uint8_t NBYTES, uint32_t *w_buffer) {
 	//loop until bus is idle
 	volatile int count = 0;
 	uint8_t timeout = 0xFF;
-	while (timeout != 1) timeout = i2c2_check_bus(count); 
+	while (timeout != 1) timeout = i2c2_check_bus(); 
 
 	I2C2_CR2 |= (1 << 13); //send start condition
 
 	//loop until all bytes are sent
 	for (count = NBYTES-1; count > -1; count--) {
 		while (!((I2C2_ISR >> 1) & 1)); //loop until TXIS flag is set
-		I2C2_TXDR = ((*w_buffer >> (8*count)) & 0xFF); 
+		I2C2_TXDR = (uint8_t)((w_buffer >> (8*count)) & 0xFF); 
 	}
 
 	//delay for target device to process 2nd data byte
@@ -54,7 +54,7 @@ void i2c2_write(uint8_t NBYTES, uint32_t *w_buffer) {
 }
 
 //Write to a register in the target device then read and store 4 bytes to the r_buffer
-void i2c2_write_read(uint8_t NBYTES, uint32_t *target_reg, uint32_t *r_buffer) {
+void i2c2_write_read(uint8_t NBYTES, const uint16_t target_reg, uint32_t *r_buffer) {
 	*r_buffer = 0; //clear r_buffer
 
 	//complete write section first:
@@ -65,12 +65,12 @@ void i2c2_write_read(uint8_t NBYTES, uint32_t *target_reg, uint32_t *r_buffer) {
 	//loop until bus is idle
 	volatile int count = 0;
 	uint8_t timeout = 0xFF;
-	while (timeout != 1) timeout = i2c2_check_bus(count); 
+	while (timeout != 1) timeout = i2c2_check_bus(); 
 
 	I2C2_CR2 |= (1 << 13); //send start condition
 
 	while (!((I2C2_ISR >> 1) & 1)); //loop until TXIS flag is set
-	I2C2_TXDR = *target_reg & 0xFF; //only use first byte 
+	I2C2_TXDR = target_reg & 0xFF; //only use first byte 
 
 	//repeated START to do read section:
 	while ((I2C2_CR2 >> 13) & 1); //loop until START bit is not set
@@ -82,7 +82,7 @@ void i2c2_write_read(uint8_t NBYTES, uint32_t *target_reg, uint32_t *r_buffer) {
 	//loop until bus is idle
 	count = 0;
 	timeout = 0xFF;
-	while (timeout != 1) timeout = i2c2_check_bus(count); 
+	while (timeout != 1) timeout = i2c2_check_bus(); 
 
 	I2C2_CR2 |= (1 << 13); //send start condition
 
@@ -99,7 +99,7 @@ void i2c2_write_read(uint8_t NBYTES, uint32_t *target_reg, uint32_t *r_buffer) {
 }	
 
 //Use timers to check if the bus goes idle; returns 1 if idle and 0 if not idle
-uint8_t i2c2_check_bus(volatile int count) {
+uint8_t i2c2_check_bus(void) {
 	I2C2_TIMEOUTR |= (1 << 12); //set TIDLE
 	I2C2_TIMEOUTR |= (0xC3); //25 ms = 0xC3
 	I2C2_TIMEOUTR |= (1 << 15); //enable timeout timer

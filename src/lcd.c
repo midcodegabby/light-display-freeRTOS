@@ -233,11 +233,10 @@ void lcd_output_text(lcd_text_buffer_t const buf){
     }
 }
 
+/*
 void lcd_output_pixels(lcd_pixel_buffer_t const buf){
-
 }
-
-
+*/
 
 
 

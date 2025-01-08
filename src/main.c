@@ -26,6 +26,8 @@ Purpose: To get the LD2 on the Nucleo-L476RG to turn on.
 
 extern volatile uint8_t global_button_flag;
 
+volatile uint32_t lux_data;
+
 //task prototypes
 void task1_handler(void *args); //handles comms with lux sensor
 void task2_handler(void *args); //handles comms with lcd screen
@@ -43,6 +45,7 @@ static void hardware_init(void) {
 	AIRCR |= (VECTKEY);	//use the VECTKEY to gain write access to the AIRCR register
 	AIRCR &= (NVIC_PriorityGroup_4); //clear bit 10 in AIRCR, resulting in no subpriorities
 
+	//init peripherals
 	exti_init();
 	gpio_button_init();
 	timer3_basic_init();
@@ -50,17 +53,14 @@ static void hardware_init(void) {
 	lcd_init();
 	i2c2_init();
 
-	uint32_t raw_data;
-	uint32_t lux_data;
-
-	uint32_t w_buf = TSL2591_INIT_MESSAGE;
-	uint32_t data_reg = TSL2591_DATA_REGISTER;
-
-	i2c2_write(2, &w_buf);
+	//init TSL2591 via I2C
+	i2c2_write(2, TSL2591_INIT_MESSAGE);
 	tsl2591_write_settings(again_low, atime_100ms);
 
-	i2c2_write_read(4, &data_reg, &raw_data);
+	uint32_t raw_data;
+	i2c2_write_read(4, TSL2591_DATA_REGISTER, &raw_data);
 	lux_data = rawdata_to_lux(raw_data, again_low, atime_100ms);
+
 
 	char lux_buf[] = "              ";	//init an empty buffer for lux measurements. -> has size [15] (added null term)
 	snprintf(lux_buf, 15, "%lu            ", lux_data);
@@ -72,6 +72,7 @@ static void hardware_init(void) {
 	lcd_text_buffer_t lux_text_buffer = {lux_buf};
 
 	lcd_output_text(lux_text_buffer);
+
 }
 
 int main(void) {
@@ -101,14 +102,14 @@ int main(void) {
 /*---------------------------TASKS---------------------------*/
 /*-----------------------------------------------------------*/
 void task1_handler(void *args) {
-	
+	uint32_t raw_data;
 
 	while(1) {
 		/*
-		i2c2_write_read(4, &data_reg, &raw_data);
-		lux_data = rawdata_to_lux(raw_data, _AGAIN, _ATIME);
+		gpio_led_on();
+		i2c2_write_read(4, TSL2591_DATA_REGISTER, &raw_data);
+		lux_data = rawdata_to_lux(raw_data, again_low, atime_100ms);
 		*/
-		
 	}
 }
 
@@ -117,7 +118,8 @@ void task2_handler (void *args) {
 
 	while(1) {
 		/*
-		snprintf(lux_buf, 15, "%d              ", lux_data);
+		gpio_led_off();
+		snprintf(lux_buf, 15, "%lu             ", lux_data);
 
 		lux_buf[11] = 'L';
 		lux_buf[12] = 'U';
