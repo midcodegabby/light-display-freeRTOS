@@ -29,5 +29,5 @@ void spi2_init(void) {
 void spi2_write(uint8_t data) {
     SPI2_DR = data;
     while (!(SPI2_SR & 0x2));     //wait for TXE flag to be set (transmit buffer empty)
-    timer3_delay_us(10);
+    timer3_delay_us(10);          //delay slightly for D/C pin to settle low/high
 }

@@ -30,4 +30,34 @@ make install
 - How to initialize and control SPI, I2C, and Timer (in counting and PWM modes) peripherals in ARM Cortex-M4 MCUs.
 - How to debug hard faults, bus faults, etc. using ARM Core registers and System Control Block registers.
 - How to write an LCD driver.  
-  
+
+```
+lcd_data();
+spi2_write(0xFF);
+spi2_write(0x11);
+spi2_write(0xFF);
+
+lcd_command();
+spi2_write(LCD_SET_Y_ADDRESS(5));
+spi2_write(LCD_SET_X_ADDRESS(20));
+
+lcd_data();
+spi2_write(0xFF);
+spi2_write(0x11);
+spi2_write(0xFF);
+```
+This is the code that I was doing to show oscilloscope d/c commands
+
+lcd_reset();
+    lcd_on();
+
+    lcd_all_pixels();
+    then
+
+    void lcd_all_pixels(void){
+    lcd_command();
+    spi2_write(LCD_DISPLAY_ALL);
+} 
+
+then 
+#define LCD_DISPLAY_ALL (0x09)

@@ -123,7 +123,6 @@ static const uint8_t* ascii_to_bitmap(char c) {
 
 static void lcd_command(void){
     gpio_lcd_dc(0);
-    //timer3_delay_us(10);    //need for signal settling to LOW
 }
 
 static void lcd_data(void){
@@ -147,18 +146,7 @@ void lcd_init(void){
     lcd_reset();
     lcd_on();
 
-    //lcd_all_pixels();
-/*
-    lcd_command();
-    spi2_write(LCD_SET_Y_ADDRESS(5));
-    spi2_write(LCD_SET_X_ADDRESS(20));
-
-    lcd_data();
-    spi2_write(0xFF);
-    spi2_write(0x11);
-    spi2_write(0xFF);
-*/
-//works with lcd_command reasserted
+    //lcd_all_pixels();     //for testing
 }
 
 void lcd_on(void){

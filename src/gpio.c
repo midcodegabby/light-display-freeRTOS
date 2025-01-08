@@ -31,18 +31,7 @@ void gpio_timer2_ch1_init(void) {
 
 //init lcd reset and data/command pins
 void gpio_lcd_init(void) {
-	/*
-	//GPIOC_PUPDR |= (1 << 20)|(1 << 22); //pull ups for PC10/PC11
-	//GPIOC_PUPDR |= (1 << 21)|(1 << 23); //pull downs for PC10/PC11
-	GPIOC_MODER &= ~((1 << 21)|(1 << 23)); //general purpose output for PC10/PC11
-	GPIOC_OSPEEDR |= (0x3 << 20)|(0x3 << 22); //very high speed for PC10/PC11
-	//GPIOC_OTYPER |= (0x3 << 10); //open drain for PC10/PC11
-	*/
-
 	GPIOC_MODER &= ~((1 << 1)|(1 << 3)); //general purpose output for PC0/PC1
-	//GPIOC_OSPEEDR |= (0x3 << 0)|(0x3 << 2); //very high speed for PC0/PC1
-	//GPIOC_PUPDR |= (1 << 1)|(1 << 3); //pull ups for PC0/PC1
-	//GPIOC_OTYPER |= (0x3 << 0); //open drain for PC0/PC1
 }
 
 //control lcd reset pin
