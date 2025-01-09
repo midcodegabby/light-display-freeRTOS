@@ -27,6 +27,7 @@ Purpose: To get the LD2 on the Nucleo-L476RG to turn on.
 extern volatile uint8_t global_button_flag;
 
 volatile uint32_t lux_data;
+volatile uint32_t g_read_buffer = 0;
 
 //task prototypes
 void task1_handler(void *args); //handles comms with lux sensor
@@ -57,10 +58,11 @@ static void hardware_init(void) {
 	i2c2_write(2, TSL2591_INIT_MESSAGE);
 	tsl2591_write_settings(again_low, atime_100ms);
 
-	uint32_t raw_data;
-	i2c2_write_read(4, TSL2591_DATA_REGISTER, &raw_data);
-	lux_data = rawdata_to_lux(raw_data, again_low, atime_100ms);
+	i2c2_write(1, TSL2591_DATA_REGISTER);
+	i2c2_read(4);
 
+	timer3_delay_us(50000);
+	lux_data = rawdata_to_lux(g_read_buffer, again_low, atime_100ms);
 
 	char lux_buf[] = "              ";	//init an empty buffer for lux measurements. -> has size [15] (added null term)
 	snprintf(lux_buf, 15, "%lu            ", lux_data);
@@ -72,7 +74,6 @@ static void hardware_init(void) {
 	lcd_text_buffer_t lux_text_buffer = {lux_buf};
 
 	lcd_output_text(lux_text_buffer);
-
 }
 
 int main(void) {
@@ -107,7 +108,7 @@ void task1_handler(void *args) {
 	while(1) {
 		/*
 		gpio_led_on();
-		i2c2_write_read(4, TSL2591_DATA_REGISTER, &raw_data);
+		i2c2_write_read(4, TSL2591_DATA_REGISTER);
 		lux_data = rawdata_to_lux(raw_data, again_low, atime_100ms);
 		*/
 	}

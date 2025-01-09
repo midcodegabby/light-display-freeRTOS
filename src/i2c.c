@@ -14,12 +14,15 @@ Purpose: configure I2C2 and implement read and write functions
 #include "nvic.h"
 #include "tcnt.h"
 
+volatile uint8_t g_i2c2_rx_count = 0;
+extern volatile uint32_t g_read_buffer;
+
 //initialize I2C2 registers: 100KHz SCL Frequency, 7-bit addressing mode
 void i2c2_init(void) {
 	gpio_i2c2_init(); 	//set up gpio for i2c2
 
 	I2C2_CR1 &= ~1; //disable I2C2 Peripheral
-	I2C2_CR1 |= (1 << 4); //enable NACK interrupt
+	I2C2_CR1 |= (1 << 2); //enable receive interrupt
 	
 	I2C2_TIMINGR |= I2C2_TIMING_VALS;
 	
@@ -28,75 +31,49 @@ void i2c2_init(void) {
 }
 
 //write to the target; this function only allows up to 2 bytes of data transmission at once
-void i2c2_write(uint8_t NBYTES, const uint16_t w_buffer) {
+void i2c2_write(const uint8_t NBYTES, const uint16_t w_buffer) {
 	I2C2_CR2 &= ~(1 << 10); //set to Write
 	I2C2_CR2 &= ~(0xFF << 16); //clear NBYTES; if this is not done then sometimes no stop condition
 	I2C2_CR2 |= (NBYTES << 16); //NBYTES = NBYTES parameter
 
-	//loop until bus is idle
 	volatile int count = 0;
 	uint8_t timeout = 0xFF;
-	while (timeout != 1) timeout = i2c2_check_bus(); 
+	while (timeout != 1) { //loop until bus is idle
+		timeout = i2c2_check_bus(); 
+	}
 
 	I2C2_CR2 |= (1 << 13); //send start condition
 
 	//loop until all bytes are sent
 	for (count = NBYTES-1; count > -1; count--) {
 		while (!((I2C2_ISR >> 1) & 1)); //loop until TXIS flag is set
-		I2C2_TXDR = (uint8_t)((w_buffer >> (8*count)) & 0xFF); 
+		I2C2_TXDR = (uint8_t) (w_buffer >> (8*count)); 
 	}
 
-	//delay for target device to process 2nd data byte
-	timer3_delay_us(500);
+	if (NBYTES > 1) {
+		timer3_delay_us(30);	//delay for target device to process 2nd data byte
+	}
 
 	I2C2_CR2 |= (1 << 14); //send STOP condition
 	I2C2_ICR |= (1 << 5); //clear stop flag
 }
 
-//Write to a register in the target device then read and store 4 bytes to the r_buffer
-void i2c2_write_read(uint8_t NBYTES, const uint16_t target_reg, uint32_t *r_buffer) {
-	*r_buffer = 0; //clear r_buffer
-
-	//complete write section first:
-	I2C2_CR2 &= ~(1 << 10); //set to Write
-	I2C2_CR2 &= ~(0xFF << 16); //clear NBYTES; if this is not done then sometimes no stop condition
-	I2C2_CR2 |= (1 << 16); //NBYTES = 1
-	
-	//loop until bus is idle
-	volatile int count = 0;
-	uint8_t timeout = 0xFF;
-	while (timeout != 1) timeout = i2c2_check_bus(); 
-
-	I2C2_CR2 |= (1 << 13); //send start condition
-
-	while (!((I2C2_ISR >> 1) & 1)); //loop until TXIS flag is set
-	I2C2_TXDR = target_reg & 0xFF; //only use first byte 
-
-	//repeated START to do read section:
-	while ((I2C2_CR2 >> 13) & 1); //loop until START bit is not set
-
+//read from the i2c bus
+void i2c2_read(const uint8_t NBYTES) {
 	I2C2_CR2 |= (1 << 10); //set to Read 
 	I2C2_CR2 &= ~(0xFF << 16); //clear NBYTES; if this is not done then sometimes no stop condition
 	I2C2_CR2 |= (NBYTES << 16); //NBYTES = 4 for the TSL2591 data registers
 
-	//loop until bus is idle
-	count = 0;
-	timeout = 0xFF;
-	while (timeout != 1) timeout = i2c2_check_bus(); 
+	volatile int count = 0;
+	uint8_t timeout = 0xFF;
+	while (timeout != 1) { //loop until bus is idle
+		timeout = i2c2_check_bus(); 
+	}
 
 	I2C2_CR2 |= (1 << 13); //send start condition
 
-	//loop until all bytes are read 
-	for (count = 0; count < NBYTES; count++) {
-		while (!((I2C2_ISR >> 2) & 1)); //loop until RXNE flag is set
-		*r_buffer |= (I2C2_RXDR & 0xFF) << (count*8); 
-	}
-
-	//NOTE: NACK is automatically sent after the last byte reception. 
-	
-	I2C2_CR2 |= (1 << 14); //send STOP condition
-	I2C2_ICR |= (1 << 5); //clear stop flag
-}	
+	g_read_buffer = 0;
+}
 
 //Use timers to check if the bus goes idle; returns 1 if idle and 0 if not idle
 uint8_t i2c2_check_bus(void) {
@@ -118,14 +95,36 @@ uint8_t i2c2_check_bus(void) {
 	}
 }
 
-//Function to resolve I2C deadlocks - not completed
-void i2c2_resolve_deadlock(void) {
-}
-
-//IRQ handler for I2C2 event interrupts; for now for NACKs
+//IRQ handler for I2C2 event interrupts - for receives!
 void I2C2_EV_IRQHandler(void) {
 	nvic_disable();
-	//do something
+
+	static uint8_t bytes_rx;	//holds number of bytes received
+
+	//if this is the first received byte, init a count var to 1
+	if (g_i2c2_rx_count == 0) {
+		///*
+		bytes_rx = 0;
+		g_read_buffer |= ((uint8_t) I2C2_RXDR) << (g_i2c2_rx_count*8);
+		//*/
+
+		bytes_rx = 1;
+		g_i2c2_rx_count = 1;
+	}
+	else {
+		///*
+		g_read_buffer |= ((uint8_t) I2C2_RXDR) << (bytes_rx*8);
+		//*/
+
+		bytes_rx++;
+	}
+
+	if (bytes_rx == I2C2_NBYTES) {
+		I2C2_CR2 |= (1 << 14); //send STOP condition
+		I2C2_ICR |= (1 << 5); //clear stop flag
+		bytes_rx = 0;
+		g_i2c2_rx_count = 0;
+	}
 	nvic_enable();
 }
 
