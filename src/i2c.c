@@ -14,7 +14,7 @@ Purpose: configure I2C2 and implement read and write functions
 #include "nvic.h"
 #include "tcnt.h"
 
-volatile uint8_t g_i2c2_rx_count = 0;
+volatile uint8_t g_i2c2_stage = I2C2_POST_DISPLAY;
 extern volatile uint32_t g_read_buffer;
 
 //initialize I2C2 registers: 100KHz SCL Frequency, 7-bit addressing mode
@@ -56,6 +56,8 @@ void i2c2_write(const uint8_t NBYTES, const uint16_t w_buffer) {
 
 	I2C2_CR2 |= (1 << 14); //send STOP condition
 	I2C2_ICR |= (1 << 5); //clear stop flag
+
+	g_i2c2_stage = I2C2_POST_WRITE;
 }
 
 //read from the i2c bus
@@ -73,6 +75,7 @@ void i2c2_read(const uint8_t NBYTES) {
 	I2C2_CR2 |= (1 << 13); //send start condition
 
 	g_read_buffer = 0;
+	g_i2c2_stage = I2C2_POST_READ;
 }
 
 //Use timers to check if the bus goes idle; returns 1 if idle and 0 if not idle
@@ -99,20 +102,22 @@ uint8_t i2c2_check_bus(void) {
 void I2C2_EV_IRQHandler(void) {
 	nvic_disable();
 
+	gpio_led_on();
+
 	static uint8_t bytes_rx;	//holds number of bytes received
 
 	//if this is the first received byte, init a count var to 1
-	if (g_i2c2_rx_count == 0) {
-		///*
+	if (g_i2c2_stage == I2C2_POST_READ) {
+		///* BEFORE DMA
 		bytes_rx = 0;
-		g_read_buffer |= ((uint8_t) I2C2_RXDR) << (g_i2c2_rx_count*8);
+		g_read_buffer |= ((uint8_t) I2C2_RXDR);
 		//*/
 
 		bytes_rx = 1;
-		g_i2c2_rx_count = 1;
+		g_i2c2_stage = I2C2_RECEIVING;
 	}
 	else {
-		///*
+		///* BEFORE DMA
 		g_read_buffer |= ((uint8_t) I2C2_RXDR) << (bytes_rx*8);
 		//*/
 
@@ -123,7 +128,7 @@ void I2C2_EV_IRQHandler(void) {
 		I2C2_CR2 |= (1 << 14); //send STOP condition
 		I2C2_ICR |= (1 << 5); //clear stop flag
 		bytes_rx = 0;
-		g_i2c2_rx_count = 0;
+		g_i2c2_stage = I2C2_POST_RECEIVE;
 	}
 	nvic_enable();
 }

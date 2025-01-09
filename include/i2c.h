@@ -31,6 +31,14 @@ Date: 12/30/2024
 //timing for 16MHz I2CCLK and 400KHz transmission frequency
 #define I2C2_TIMING_VALS ((0x1<<28)|(0x3<<20)|(0x2<<16)|(0x3<<8)|(0x9))
 
+typedef enum{
+    I2C2_POST_WRITE,
+    I2C2_POST_READ,
+    I2C2_RECEIVING,
+    I2C2_POST_RECEIVE,
+    I2C2_POST_DISPLAY
+} i2c2_stages_t;
+
 void i2c2_init(void);
 void i2c2_write(const uint8_t NBYTES, const uint16_t w_buffer);
 void i2c2_read(const uint8_t NBYTES);

@@ -13,7 +13,7 @@ Purpose: to enable interrupts and handle some IRQs
 #include "lcd.h"
 
 //flag for button press
-volatile uint8_t global_button_flag;
+volatile uint8_t g_button_flag;
 
 //enable interrupts
 void exti_init(void) {
@@ -29,7 +29,7 @@ void exti_disable(void) {
 
 //IRQ handler for button push interrupt
 void EXTI15_10_IRQHandler(void) {
-        global_button_flag = 1;
+        g_button_flag = 1;
         EXTI_PR1 |= (1 << 13);  //clear pending interrupts on this line
 }
 
