@@ -84,9 +84,17 @@ uint32_t rawdata_to_lux(const uint32_t raw_data, again_t AGAIN, atime_t ATIME) {
 	//following if statements and constant multiplication is calibration using my 
 	//iPhone's Photone lux meter app: (for Low gain only!!!)
 	if (AGAIN == again_low) {
-		if (lux_data > 650.0F) return lux_data*1.6F;
-		else if (lux_data < 300.0F) return lux_data*0.8F;
-		else return lux_data;
+		if (lux_data > 650.0F) {
+			return ((uint32_t) (lux_data*1.6F));
+		}
+
+		else if (lux_data < 300.0F) {
+			return ((uint32_t) (lux_data*0.8F));
+		}
+
+		else {
+			return ((uint32_t) lux_data);
+		}
 	}
 	return ((uint32_t) lux_data);
 }

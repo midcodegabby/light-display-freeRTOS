@@ -66,7 +66,6 @@ void i2c2_read(const uint8_t NBYTES) {
 	I2C2_CR2 &= ~(0xFF << 16); //clear NBYTES; if this is not done then sometimes no stop condition
 	I2C2_CR2 |= (NBYTES << 16); //NBYTES = 4 for the TSL2591 data registers
 
-	volatile int count = 0;
 	uint8_t timeout = 0xFF;
 	while (timeout != 1) { //loop until bus is idle
 		timeout = i2c2_check_bus(); 
@@ -101,8 +100,6 @@ uint8_t i2c2_check_bus(void) {
 //IRQ handler for I2C2 event interrupts - for receives!
 void I2C2_EV_IRQHandler(void) {
 	nvic_disable();
-
-	gpio_led_on();
 
 	static uint8_t bytes_rx;	//holds number of bytes received
 

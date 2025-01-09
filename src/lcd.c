@@ -215,7 +215,8 @@ void lcd_output_text(lcd_text_buffer_t const buf){
         lcd_command();
         spi2_write(LCD_SET_Y_ADDRESS(y));   //set y address to equal the index of the array of the current string
 
-        for (uint8_t x = 0; buf[y][x] != '\0'; x++){  //loop for every bit column until null terminator is hit
+        //for (uint8_t x = 0; (buf[y][x] != '\0'); x++){  //loop for every bit column until null terminator is hit
+		for (uint8_t x = 0; x < 5; x++){  //loop for every bit column until null terminator is hit
             
             c = buf[y][x];
             const uint8_t* ascii_array = ascii_to_bitmap(c);    //convert each char to an array of bytes representing pixels

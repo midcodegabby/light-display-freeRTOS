@@ -87,13 +87,13 @@ int main(void) {
 
 	hardware_init();
 
-	status = xTaskCreate( (TaskFunction_t) task1_handler, "lux_task", STACK_SIZE, NULL, 1, NULL);
+	status = xTaskCreate( (TaskFunction_t) task1_handler, "lux_task", STACK_SIZE, NULL, 2, NULL);
 	configASSERT(status == pdPASS);
 
-	status = xTaskCreate( (TaskFunction_t) task2_handler, "lcd_task", STACK_SIZE, NULL, 1, NULL);
+	status = xTaskCreate( (TaskFunction_t) task2_handler, "lcd_task", STACK_SIZE, NULL, 2, NULL);
 	configASSERT(status == pdPASS);
 
-	status = xTaskCreate( (TaskFunction_t) task3_handler, "lcd_task", STACK_SIZE, NULL, 1, NULL);
+	status = xTaskCreate( (TaskFunction_t) task3_handler, "lcd_task", STACK_SIZE, NULL, 2, NULL);
 	configASSERT(status == pdPASS);
 
 	vTaskStartScheduler();
@@ -109,33 +109,40 @@ int main(void) {
 /*-----------------------------------------------------------*/
 void task1_handler(void *args) {
 	while(1) {
-		
-		if (g_i2c2_stage == I2C2_POST_DISPLAY) { //write and read data
+		gpio_led_off();
+		if (g_i2c2_stage == I2C2_POST_DISPLAY) { //write data
 			i2c2_write(1, TSL2591_DATA_REGISTER);
+		}
+
+		if (g_i2c2_stage == I2C2_POST_WRITE) { //read data
 			i2c2_read(4);
 		}
 
-		else if (g_i2c2_stage == I2C2_POST_RECEIVE){ //process data
+		if (g_i2c2_stage == I2C2_POST_RECEIVE){ //process data
 			g_lux_data = rawdata_to_lux(g_read_buffer, again_low, atime_100ms);
 			g_i2c2_stage = I2C2_POST_DISPLAY;
 		}
-		
 	}
 }
 
 void task2_handler (void *args) {
-	char lux_buf[] = "              ";	//init an empty buffer for lux measurements. -> has size [15] (14 + \0)
+	//char lux_buf[] = "              ";	//init an empty buffer for lux measurements. -> has size [15] (14 + \0)
+	char lux_buf[15];
+	lcd_text_buffer_t lux_text_buffer = {lux_buf};
 
 	while(1) {	
-		snprintf(lux_buf, 15, "%lu             ", g_lux_data);
+		gpio_led_on();
+		///*
+		g_lux_data = 10000;
+		snprintf(lux_buf, 15, "%lu", g_lux_data);
 
-		lux_buf[11] = 'L';
-		lux_buf[12] = 'U';
-		lux_buf[13] = 'X';
-
-		lcd_text_buffer_t lux_text_buffer = {lux_buf};
+		//lux_buf[11] = 'L';
+		//lux_buf[12] = 'U';
+		//lux_buf[13] = 'X';
+		//lux_buf[2] = '\0';
 
 		lcd_output_text(lux_text_buffer);
+		//*/
 	}
 }
 
@@ -175,7 +182,7 @@ void vApplicationStackOverflowHook( TaskHandle_t pxTask,
     taskDISABLE_INTERRUPTS();
 
 	//do stuff in here to debug
-    for( ; ; ) {
+    while(1) {
 		gpio_led_on();
 	}
     
