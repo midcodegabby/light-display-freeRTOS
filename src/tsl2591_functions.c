@@ -20,7 +20,7 @@ Purpose: Implement functions to operate on raw tsl2591 data
 //set the gain and integration time
 void tsl2591_write_settings(again_t AGAIN, atime_t ATIME) {
 	const uint16_t data = ((TSL2591_CTRL << 8)|(AGAIN)|(ATIME));
-	i2c2_write(2, data);
+	const uint8_t stage = i2c2_write(2, data);
 }
 
 //return the light data in units of LUX

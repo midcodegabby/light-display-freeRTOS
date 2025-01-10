@@ -6,14 +6,18 @@ Purpose: to enable interrupts and handle some IRQs
 
 #include <stdint.h>
 
+#include <FreeRTOS.h>
+#include <task.h>
+#include <semphr.h>
+
 #include "exti.h"
 #include "clock.h"
 #include "nvic.h"
 #include "gpio.h"
 #include "lcd.h"
 
-//flag for button press
-volatile uint8_t g_button_flag;
+//semaphore to synchronize button presses to task actions.
+extern SemaphoreHandle_t p_button_binary_semaphore;
 
 //enable interrupts
 void exti_init(void) {
@@ -29,7 +33,11 @@ void exti_disable(void) {
 
 //IRQ handler for button push interrupt
 void EXTI15_10_IRQHandler(void) {
-        g_button_flag = 1;
+        BaseType_t xHigherPriorityTaskWoken = pdFALSE;  //init a var to hold whether a higher priority task is being blocked by the button binary semaphore
+        xSemaphoreGiveFromISR(p_button_binary_semaphore, &xHigherPriorityTaskWoken); //give button_binary_semaphore away
+
         EXTI_PR1 |= (1 << 13);  //clear pending interrupts on this line
+
+        portYIELD_FROM_ISR(xHigherPriorityTaskWoken);   //force context switch to higher priority blocked task (if there is one)
 }
 

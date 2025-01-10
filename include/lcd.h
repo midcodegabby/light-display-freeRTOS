@@ -3,8 +3,8 @@ Author: Gabriel Rodgers
 Date: 12/27/2024
 */
 
-#ifndef LCD_H_
-#define LCD_H_
+#ifndef LCD_H
+#define LCD_H
 
 #define BITMAP_WIDTH 5
 
@@ -51,4 +51,4 @@ void lcd_clear(void);
 void lcd_output_text(lcd_text_buffer_t const buf);
 //void lcd_output_pixels(lcd_pixel_buffer_t const buf);
 
-#endif /* LCD_H_ */
+#endif /* LCD_H */

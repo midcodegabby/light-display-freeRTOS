@@ -8,6 +8,10 @@ Purpose: To get the LD2 on the Nucleo-L476RG to turn on.
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <FreeRTOS.h>
+#include <task.h>
+#include <semphr.h>
+
 #include "main.h"
 #include "clock.h"
 #include "gpio.h"
@@ -18,17 +22,13 @@ Purpose: To get the LD2 on the Nucleo-L476RG to turn on.
 #include "i2c.h"
 #include "tsl2591_functions.h"
 
-#include <FreeRTOS.h>
-#include <task.h>
-
 #define STACK_SIZE (512)
 #define NVIC_PriorityGroup_4 (~(1 << 10))
 
-extern volatile uint8_t g_button_flag;
-extern volatile uint8_t g_i2c2_stage;
+//extern volatile uint8_t g_dma_flag; //REPLACE WITH SEMAPHORE
 
-volatile uint32_t g_lux_data;
-volatile uint32_t g_read_buffer = 0;
+//binary semaphores
+SemaphoreHandle_t p_button_binary_semaphore = NULL;
 
 //task prototypes
 void task1_handler(void *args); //handles comms with lux sensor
@@ -56,29 +56,8 @@ static void hardware_init(void) {
 	i2c2_init();
 
 	//init TSL2591 via I2C
-	i2c2_write(2, TSL2591_INIT_MESSAGE);
+	uint8_t ret = i2c2_write(2, TSL2591_INIT_MESSAGE);
 	tsl2591_write_settings(again_low, atime_100ms);
-/*
-	i2c2_write(1, TSL2591_DATA_REGISTER);
-	i2c2_read(4);
-
-	while (g_i2c2_stage != I2C2_POST_RECEIVE);
-
-	g_lux_data = rawdata_to_lux(g_read_buffer, again_low, atime_100ms);
-
-	g_i2c2_stage = I2C2_POST_DISPLAY;
-
-	char lux_buf[] = "              ";	//init an empty buffer for lux measurements. -> has size [15] (added null term)
-	snprintf(lux_buf, 15, "%lu            ", g_lux_data);
-
-	lux_buf[11] = 'L';
-	lux_buf[12] = 'U';
-	lux_buf[13] = 'X';
-
-	lcd_text_buffer_t lux_text_buffer = {lux_buf};
-
-	lcd_output_text(lux_text_buffer);
-*/
 }
 
 int main(void) {
@@ -86,6 +65,9 @@ int main(void) {
 	BaseType_t status;
 
 	hardware_init();
+
+	p_button_binary_semaphore = xSemaphoreCreateBinary();		//create binary semaphore for button
+	configASSERT(p_button_binary_semaphore != NULL);
 
 	status = xTaskCreate( (TaskFunction_t) task1_handler, "lux_task", STACK_SIZE, NULL, 2, NULL);
 	configASSERT(status == pdPASS);
@@ -108,41 +90,52 @@ int main(void) {
 /*---------------------------TASKS---------------------------*/
 /*-----------------------------------------------------------*/
 void task1_handler(void *args) {
+	uint8_t i2c2_stage = I2C2_START_POLL;
+	uint32_t processed_data = 0;
+
+	//WIP-----------------------------------
+	uint32_t raw_data = 0;	//THIS SHOULD POINT TO DMA MEMORY PART
+	//START QUEUE
+	//USE port_YIELD_FROM_ISR() in dma part!!!
 	while(1) {
 		gpio_led_off();
-		if (g_i2c2_stage == I2C2_POST_DISPLAY) { //write data
-			i2c2_write(1, TSL2591_DATA_REGISTER);
+		/*
+		if (i2c2_stage == I2C2_START_POLL) { //write data
+			i2c2_stage = i2c2_write(1, TSL2591_DATA_REGISTER);
+		}
+		if (i2c2_stage == I2C2_POST_WRITE) { //read data
+			i2c2_stage = i2c2_read(4);
 		}
 
-		if (g_i2c2_stage == I2C2_POST_WRITE) { //read data
-			i2c2_read(4);
-		}
+		//this part is a WIP-need to do some sort of DMA flag for this - perhaps a mutex.
+		if (g_dma_flag == 1) { //process data
+			processed_data = rawdata_to_lux(raw_data, again_low, atime_100ms);
+			i2c2_stage = I2C2_POST_RECEIVE;
 
-		if (g_i2c2_stage == I2C2_POST_RECEIVE){ //process data
-			g_lux_data = rawdata_to_lux(g_read_buffer, again_low, atime_100ms);
-			g_i2c2_stage = I2C2_POST_DISPLAY;
 		}
+		if (i2c2_stage == I2C2_POST_RECEIVE) {
+			//send data via queue to task 2
+			g_dma_flag = 0; //RELEASE MUTEX, but only do next step if it suceeds!!!
+			i2c2_stage = I2C2_START_POLL;
+		}
+		*/
 	}
 }
 
 void task2_handler (void *args) {
-	//char lux_buf[] = "              ";	//init an empty buffer for lux measurements. -> has size [15] (14 + \0)
 	char lux_buf[15];
 	lcd_text_buffer_t lux_text_buffer = {lux_buf};
+	uint32_t value = 0;
 
 	while(1) {	
 		gpio_led_on();
-		///*
-		g_lux_data = 10000;
-		snprintf(lux_buf, 15, "%lu", g_lux_data);
-
-		//lux_buf[11] = 'L';
-		//lux_buf[12] = 'U';
-		//lux_buf[13] = 'X';
-		//lux_buf[2] = '\0';
-
-		lcd_output_text(lux_text_buffer);
-		//*/
+		
+		//wait for queue to have data in it
+		if (1) {
+			value++;
+			snprintf(lux_buf, 15, "%lu LUX", value);
+			lcd_output_text(lux_text_buffer);
+		}
 	}
 }
 
@@ -151,7 +144,7 @@ void task3_handler (void *args) {
 	uint8_t lcd_backlight_brightness = 0xFF;
 
 	while(1) {
-		if (g_button_flag == 1) {
+		if (xSemaphoreTake(p_button_binary_semaphore, portMAX_DELAY) == pdPASS) {	//take the semaphore and block if unable tos
 			switch(lcd_backlight_brightness) {
 				case (0xFF):
 					lcd_backlight_brightness = 0x00;
@@ -161,7 +154,6 @@ void task3_handler (void *args) {
 					lcd_backlight_brightness += 0xF;
 					lcd_backlight_set(lcd_backlight_brightness);
 			}
-			g_button_flag = 0;
 		}
 	}
 }
@@ -182,10 +174,14 @@ void vApplicationStackOverflowHook( TaskHandle_t pxTask,
     taskDISABLE_INTERRUPTS();
 
 	//do stuff in here to debug
-    while(1) {
-		gpio_led_on();
-	}
-    
+	gpio_led_on();
+    while(1);
 }
 /*-----------------------------------------------------------*/
+void vApplicationMallocFailedHook(void) {
+    // Handle heap allocation failure
 
+	gpio_led_on();
+    while (1); // Halt or reset
+}
+/*-----------------------------------------------------------*/

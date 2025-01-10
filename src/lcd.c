@@ -210,16 +210,18 @@ void lcd_clear(void){
 }
 
 void lcd_output_text(lcd_text_buffer_t const buf){
-    char c;
+
+	lcd_command();
+    spi2_write(LCD_SET_Y_ADDRESS(0));
+	spi2_write(LCD_SET_X_ADDRESS(0));
+
+	const uint8_t* ascii_array;
     for (uint8_t y = 0; y < LCD_Y_COUNT; y++) {     //loop for every byte row
         lcd_command();
         spi2_write(LCD_SET_Y_ADDRESS(y));   //set y address to equal the index of the array of the current string
 
-        //for (uint8_t x = 0; (buf[y][x] != '\0'); x++){  //loop for every bit column until null terminator is hit
-		for (uint8_t x = 0; x < 5; x++){  //loop for every bit column until null terminator is hit
-            
-            c = buf[y][x];
-            const uint8_t* ascii_array = ascii_to_bitmap(c);    //convert each char to an array of bytes representing pixels
+        for (uint8_t x = 0; (buf[y][x] != '\0'); x++){  //loop for every bit column until null terminator is hit
+            ascii_array = ascii_to_bitmap(buf[y][x]);    //convert each char to an array of bytes representing pixels
 
             for (uint8_t column = 0; column < 6; column++){
                 if (column < BITMAP_WIDTH) {
@@ -227,6 +229,7 @@ void lcd_output_text(lcd_text_buffer_t const buf){
                     spi2_write(ascii_array[column]);
                 }
                 else {  //this section adds a space between each character
+					lcd_data();
                     spi2_write(0x00);
                 }
             }
