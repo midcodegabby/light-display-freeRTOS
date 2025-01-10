@@ -22,6 +22,9 @@ Purpose: To create an application for a real-time light display system using Fre
 #include "exti.h"
 #include "i2c.h"
 #include "tsl2591_functions.h"
+#include "dma.h"
+
+#define DMA1_WRITE_ADDRESS (*((volatile uint32_t *) (0x10000000)))
 
 #define STACK_SIZE (512)
 #define NVIC_PriorityGroup_4 (~(1 << 10))
@@ -57,6 +60,8 @@ static void hardware_init(void) {
 	gpio_led_init();
 	lcd_init();
 	i2c2_init();
+
+	dma1_ch5_init();
 
 	//init TSL2591 via I2C
 	uint8_t ret = i2c2_write(2, TSL2591_INIT_MESSAGE);
@@ -101,12 +106,9 @@ int main(void) {
 void task1_handler(void *args) {
 	uint8_t i2c2_stage = I2C2_START_POLL;
 	uint32_t lux_data = 0;
-	uint32_t raw_data = 0;	//THIS SHOULD POINT TO DMA MEMORY PART
 	
 	while(1) {
 		gpio_led_off();
-
-		raw_data++;
 		
 		if (i2c2_stage == I2C2_START_POLL) { //write data
 			i2c2_stage = i2c2_write(1, TSL2591_DATA_REGISTER);
@@ -115,7 +117,7 @@ void task1_handler(void *args) {
 			i2c2_stage = i2c2_read(4);			
 		}
 		if (xSemaphoreTake(p_dma_binary_semaphore, portMAX_DELAY) == pdPASS) { //process data but only if the dma interrupt gives the semaphore
-			lux_data = rawdata_to_lux(raw_data, again_low, atime_100ms);
+			lux_data = rawdata_to_lux(DMA1_WRITE_ADDRESS, again_low, atime_100ms);
 
 			xQueueSend(lux_data_queue, &lux_data, portMAX_DELAY);	//send the address of lux_data through the queue, but only if queue is not full
 
