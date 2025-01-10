@@ -1,7 +1,7 @@
 /*
 Author: Gabriel Rodgers
-Date: 8/1/2024
-Purpose: To get the LD2 on the Nucleo-L476RG to turn on. 
+Date: 1/9/2025
+Purpose: To create an application for a real-time light display system using FreeRTOS.
 */
 
 #include <stdint.h>
@@ -11,6 +11,7 @@ Purpose: To get the LD2 on the Nucleo-L476RG to turn on.
 #include <FreeRTOS.h>
 #include <task.h>
 #include <semphr.h>
+#include <queue.h>
 
 #include "main.h"
 #include "clock.h"
@@ -25,10 +26,12 @@ Purpose: To get the LD2 on the Nucleo-L476RG to turn on.
 #define STACK_SIZE (512)
 #define NVIC_PriorityGroup_4 (~(1 << 10))
 
-//extern volatile uint8_t g_dma_flag; //REPLACE WITH SEMAPHORE
-
 //binary semaphores
 SemaphoreHandle_t p_button_binary_semaphore = NULL;
+SemaphoreHandle_t p_dma_binary_semaphore = NULL;
+
+//queues
+static QueueHandle_t lux_data_queue = NULL;
 
 //task prototypes
 void task1_handler(void *args); //handles comms with lux sensor
@@ -69,6 +72,12 @@ int main(void) {
 	p_button_binary_semaphore = xSemaphoreCreateBinary();		//create binary semaphore for button
 	configASSERT(p_button_binary_semaphore != NULL);
 
+	p_dma_binary_semaphore = xSemaphoreCreateBinary();		//create binary semaphore for dma writes
+	configASSERT(p_dma_binary_semaphore != NULL);
+
+	lux_data_queue = xQueueCreate(8, (size_t) 4); //create queue with 8 indeces, with each index having a max size of 4 bytes
+	configASSERT(lux_data_queue != NULL);
+
 	status = xTaskCreate( (TaskFunction_t) task1_handler, "lux_task", STACK_SIZE, NULL, 2, NULL);
 	configASSERT(status == pdPASS);
 
@@ -91,49 +100,40 @@ int main(void) {
 /*-----------------------------------------------------------*/
 void task1_handler(void *args) {
 	uint8_t i2c2_stage = I2C2_START_POLL;
-	uint32_t processed_data = 0;
-
-	//WIP-----------------------------------
+	uint32_t lux_data = 0;
 	uint32_t raw_data = 0;	//THIS SHOULD POINT TO DMA MEMORY PART
-	//START QUEUE
-	//USE port_YIELD_FROM_ISR() in dma part!!!
+	
 	while(1) {
 		gpio_led_off();
-		/*
+
+		raw_data++;
+		
 		if (i2c2_stage == I2C2_START_POLL) { //write data
 			i2c2_stage = i2c2_write(1, TSL2591_DATA_REGISTER);
 		}
 		if (i2c2_stage == I2C2_POST_WRITE) { //read data
-			i2c2_stage = i2c2_read(4);
+			i2c2_stage = i2c2_read(4);			
 		}
+		if (xSemaphoreTake(p_dma_binary_semaphore, portMAX_DELAY) == pdPASS) { //process data but only if the dma interrupt gives the semaphore
+			lux_data = rawdata_to_lux(raw_data, again_low, atime_100ms);
 
-		//this part is a WIP-need to do some sort of DMA flag for this - perhaps a mutex.
-		if (g_dma_flag == 1) { //process data
-			processed_data = rawdata_to_lux(raw_data, again_low, atime_100ms);
-			i2c2_stage = I2C2_POST_RECEIVE;
+			xQueueSend(lux_data_queue, &lux_data, portMAX_DELAY);	//send the address of lux_data through the queue, but only if queue is not full
 
-		}
-		if (i2c2_stage == I2C2_POST_RECEIVE) {
-			//send data via queue to task 2
-			g_dma_flag = 0; //RELEASE MUTEX, but only do next step if it suceeds!!!
 			i2c2_stage = I2C2_START_POLL;
 		}
-		*/
 	}
 }
 
 void task2_handler (void *args) {
 	char lux_buf[15];
 	lcd_text_buffer_t lux_text_buffer = {lux_buf};
-	uint32_t value = 0;
+	uint32_t lux_data = 0;
 
 	while(1) {	
 		gpio_led_on();
 		
-		//wait for queue to have data in it
-		if (1) {
-			value++;
-			snprintf(lux_buf, 15, "%lu LUX", value);
+		if (xQueueReceive(lux_data_queue, &lux_data, portMAX_DELAY) == pdPASS) { //wait for queue to have data in it
+			snprintf(lux_buf, 15, "%lu LUX", lux_data);
 			lcd_output_text(lux_text_buffer);
 		}
 	}
@@ -144,7 +144,7 @@ void task3_handler (void *args) {
 	uint8_t lcd_backlight_brightness = 0xFF;
 
 	while(1) {
-		if (xSemaphoreTake(p_button_binary_semaphore, portMAX_DELAY) == pdPASS) {	//take the semaphore and block if unable tos
+		if (xSemaphoreTake(p_button_binary_semaphore, portMAX_DELAY) == pdPASS) {	//take the semaphore and block if unable to
 			switch(lcd_backlight_brightness) {
 				case (0xFF):
 					lcd_backlight_brightness = 0x00;
@@ -181,7 +181,8 @@ void vApplicationStackOverflowHook( TaskHandle_t pxTask,
 void vApplicationMallocFailedHook(void) {
     // Handle heap allocation failure
 
+	//do stuff in here to debug
 	gpio_led_on();
-    while (1); // Halt or reset
+    while (1);
 }
 /*-----------------------------------------------------------*/

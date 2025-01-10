@@ -94,7 +94,6 @@ uint8_t i2c2_check_bus(void) {
 	}
 }
 
-//PROBABLY DON'T NEED THIS!!!
 //IRQ handler for I2C2 event interrupts - for receives!
 void I2C2_EV_IRQHandler(void) {
 	static uint8_t bytes_rx = 0;	//holds number of bytes received
