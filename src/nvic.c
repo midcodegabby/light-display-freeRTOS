@@ -1,8 +1,7 @@
 /*
 Author: Gabriel Rodgers
 Date: 10/13/2024
-Purpose: To control interrupts through the NVIC;
-        this file only effects interrupts 40 (Button)
+Purpose: To control interrupts/priorities through the NVIC
 */
 
 #include <stdint.h>

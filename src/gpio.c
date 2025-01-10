@@ -80,7 +80,6 @@ void gpio_led_init(void) {
 	//set LED pin (GPIOA pin 5) to be general purpose output mode
 	GPIOA_MODER |= (1 << 10);
 	GPIOA_MODER &= ~(1 << 11);
-
 	GPIOA_OTYPER &= ~(1 << 5); // set PA5 to be push-pull
 }
 

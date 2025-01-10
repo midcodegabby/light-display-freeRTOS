@@ -35,8 +35,6 @@ typedef enum{
     I2C2_START_POLL,
     I2C2_POST_WRITE,
     I2C2_POST_READ,
-    I2C2_RECEIVING,
-    I2C2_POST_RECEIVE
 } i2c2_stages_t;
 
 void i2c2_init(void);

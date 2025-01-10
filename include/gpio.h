@@ -3,8 +3,8 @@ Author: Gabriel Rodgers
 Date: 10/13/2024
 */
 
-#ifndef GPIO_H_
-#define GPIO_H_
+#ifndef GPIO_H
+#define GPIO_H
 
 #define GPIOA 0x48000000
 #define GPIOB 0x48000400
@@ -50,4 +50,4 @@ void gpio_led_on(void);
 void gpio_led_off(void);
 void gpio_led_toggle(void);
 
-#endif /* GPIO_H_ */
+#endif /* GPIO_H */

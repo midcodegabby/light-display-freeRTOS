@@ -193,24 +193,31 @@ void lcd_clear_pixels(void){
     spi2_write(LCD_DISPLAY_BLANK);
 }
 
-void lcd_x_scroll(void){
-
-}
-
-void lcd_y_scroll(void){
-
-}
-
 //clear the RAM of the LCD.
 void lcd_clear(void){
+	lcd_command();
+    spi2_write(LCD_SET_Y_ADDRESS(0));
+	spi2_write(LCD_SET_X_ADDRESS(0));
+
     lcd_data();
     for (uint16_t y = 0; y < LCD_Y_COUNT*LCD_X_COUNT; y++) {
         spi2_write(0x00);
     }
 }
 
-void lcd_output_text(lcd_text_buffer_t const buf){
+//clear n chars of the LCD
+void lcd_clear_n_chars(const uint8_t nchars) {
+	lcd_command();
+    spi2_write(LCD_SET_Y_ADDRESS(0));
+	spi2_write(LCD_SET_X_ADDRESS(0));
 
+	lcd_data();
+    for (uint16_t y = 0; y < nchars*7; y++) {
+        spi2_write(0x00);
+    }
+}
+
+void lcd_output_text(lcd_text_buffer_t const buf){
 	lcd_command();
     spi2_write(LCD_SET_Y_ADDRESS(0));
 	spi2_write(LCD_SET_X_ADDRESS(0));

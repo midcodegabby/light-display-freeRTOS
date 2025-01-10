@@ -8,7 +8,6 @@ Purpose: To control timers/counters
 
 #include "tcnt.h"
 #include "gpio.h"
-#include "nvic.h"
 #include "main.h"
 
 //init timer3 with 1MHz clock, regular timer mode, and interrupts.

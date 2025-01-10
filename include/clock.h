@@ -23,4 +23,4 @@ void sysclk_init(void);
 void hsi_init(void);
 void peripheral_clk_init(void);
 
-#endif /* CLOCK_H_ */
+#endif /* CLOCK_H */

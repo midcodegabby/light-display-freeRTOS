@@ -2,6 +2,7 @@
     "files.associations": {
         "freertos.h": "c",
         "main.h": "c",
-        "gpio.h": "c"
+        "gpio.h": "c",
+        "nvic.h": "c"
     }
 }

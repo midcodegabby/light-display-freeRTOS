@@ -3,8 +3,8 @@ Author: Gabriel Rodgers
 Date: 10/13/2024
 */
 
-#ifndef NVIC_H_
-#define NVIC_H_
+#ifndef NVIC_H
+#define NVIC_H
 
 #define NVIC_ISER 0xE000E100
 #define NVIC_ICER 0xE000E180
@@ -24,4 +24,4 @@ void nvic_enable(void);
 void nvic_disable(void);
 void nvic_priority(void);
 
-#endif /* NVIC_H_ */
+#endif /* NVIC_H */

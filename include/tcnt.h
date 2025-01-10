@@ -3,8 +3,8 @@ Author: Gabriel Rodgers
 Date: 12/27/2024
 */
 
-#ifndef TCNT_H_
-#define TCNT_H_
+#ifndef TCNT_H
+#define TCNT_H
 
 #define TIM2 0x40000000
 #define TIM3 0x40000400
@@ -33,10 +33,9 @@ Date: 12/27/2024
 
 void timer3_basic_init(void);
 void timer3_delay_us(uint16_t us);
-
 void timer2_basic_init(void);
 void timer2_pwm_init(void);
 void timer2_pwm_set(uint8_t level);
 void timer2_blocking_delay(uint32_t cycles);
 
-#endif /* TCNT_H_ */
+#endif /* TCNT_H */

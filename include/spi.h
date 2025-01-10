@@ -3,8 +3,8 @@ Author: Gabriel Rodgers
 Date: 12/30/2024
 */
 
-#ifndef SPI_H_
-#define SPI_H_
+#ifndef SPI_H
+#define SPI_H
 
 #define SPI2 0x40003800
 
@@ -17,4 +17,4 @@ Date: 12/30/2024
 void spi2_init(void);
 void spi2_write(uint8_t data);
 
-#endif /* SPI_H_ */
+#endif /* SPI_H */

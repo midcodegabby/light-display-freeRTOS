@@ -6,12 +6,9 @@ Purpose: configure I2C2 and implement read and write functions
 
 //include files
 #include <stdint.h>
-#include <stdio.h>
-#include <inttypes.h>
 
 #include "i2c.h"
 #include "gpio.h"
-#include "nvic.h"
 #include "tcnt.h"
 
 //initialize I2C2 registers: 100KHz SCL Frequency, 7-bit addressing mode

@@ -12,9 +12,7 @@ Purpose: to enable interrupts and handle some IRQs
 
 #include "exti.h"
 #include "clock.h"
-#include "nvic.h"
 #include "gpio.h"
-#include "lcd.h"
 
 //semaphore to synchronize button presses to task actions.
 extern SemaphoreHandle_t p_button_binary_semaphore;

@@ -7,6 +7,7 @@ Purpose: To create an application for a real-time light display system using Fre
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <FreeRTOS.h>
 #include <task.h>
@@ -60,7 +61,6 @@ static void hardware_init(void) {
 	gpio_led_init();
 	lcd_init();
 	i2c2_init();
-
 	dma1_ch5_init();
 
 	//init TSL2591 via I2C
@@ -80,16 +80,16 @@ int main(void) {
 	p_dma_binary_semaphore = xSemaphoreCreateBinary();		//create binary semaphore for dma writes
 	configASSERT(p_dma_binary_semaphore != NULL);
 
-	lux_data_queue = xQueueCreate(8, (size_t) 4); //create queue with 8 indeces, with each index having a max size of 4 bytes
+	lux_data_queue = xQueueCreate(8, (size_t) 4); 		//create queue with 8 indeces, with each index having a max size of 4 bytes
 	configASSERT(lux_data_queue != NULL);
 
-	status = xTaskCreate( (TaskFunction_t) task1_handler, "lux_task", STACK_SIZE, NULL, 2, NULL);
+	status = xTaskCreate( (TaskFunction_t) task1_handler, "lux_task", STACK_SIZE, NULL, 1, NULL);
 	configASSERT(status == pdPASS);
 
-	status = xTaskCreate( (TaskFunction_t) task2_handler, "lcd_task", STACK_SIZE, NULL, 2, NULL);
+	status = xTaskCreate( (TaskFunction_t) task2_handler, "lcd_task", STACK_SIZE, NULL, 1, NULL);
 	configASSERT(status == pdPASS);
 
-	status = xTaskCreate( (TaskFunction_t) task3_handler, "lcd_task", STACK_SIZE, NULL, 2, NULL);
+	status = xTaskCreate( (TaskFunction_t) task3_handler, "lcd_task", STACK_SIZE, NULL, 1, NULL);
 	configASSERT(status == pdPASS);
 
 	vTaskStartScheduler();
@@ -103,48 +103,48 @@ int main(void) {
 
 /*---------------------------TASKS---------------------------*/
 /*-----------------------------------------------------------*/
+//this task handles I2C comms with light sensor and sending processed data to task2.
 void task1_handler(void *args) {
 	uint8_t i2c2_stage = I2C2_START_POLL;
 	uint32_t lux_data = 0;
 	
-	const TickType_t ticks_to_wait = pdMS_TO_TICKS(10);
+	const TickType_t ticks_to_wait = pdMS_TO_TICKS(10);	//time to try to grab p_dma_binary_semaphore before quitting
 
-	while(1) {
-		gpio_led_off();
-		
+	while(1) {	
 		if (i2c2_stage == I2C2_START_POLL) { //write data
 			i2c2_stage = i2c2_write(1, TSL2591_DATA_REGISTER);
 		}
-		if (i2c2_stage == I2C2_POST_WRITE) { //read data
+		else if (i2c2_stage == I2C2_POST_WRITE) { //read data
 			i2c2_stage = i2c2_read(4);			
 		}
-		
-		if (xSemaphoreTake(p_dma_binary_semaphore, ticks_to_wait) == pdPASS) { //process data but only if the dma interrupt gives the semaphore
-			lux_data = rawdata_to_lux(DMA1_WRITE_ADDRESS, again_low, atime_100ms);
-
+		else if (xSemaphoreTake(p_dma_binary_semaphore, ticks_to_wait) == pdPASS) { //process data but only if the dma interrupt gives the semaphore
+			lux_data = rawdata_to_lux(DMA1_WRITE_ADDRESS, again_low, atime_100ms);	//process the data
 			xQueueSend(lux_data_queue, &lux_data, portMAX_DELAY);	//send the address of lux_data through the queue, but only if queue is not full
-
 			i2c2_stage = I2C2_START_POLL;
 		}
-		
 	}
 }
 
+//this task handles displaying light measurements to the LCD screen
 void task2_handler (void *args) {
 	char lux_buf[15];
 	lcd_text_buffer_t lux_text_buffer = {lux_buf};
 	uint32_t lux_data = 0;
+	uint32_t len_prev_buf = 0;
 
-	const TickType_t ticks_to_wait = pdMS_TO_TICKS(10);
+	const TickType_t ticks_to_wait = pdMS_TO_TICKS(10);	//time to try and get data from empty queue before quitting
 
 	while(1) {	
-		gpio_led_on();
-		
 		if (xQueueReceive(lux_data_queue, &lux_data, ticks_to_wait) == pdPASS) { //wait for queue to have data in it
 			snprintf(lux_buf, 15, "%lu LUX", lux_data);
-			//lcd_output_text(lux_text_buffer);
+			
+			if (strlen(lux_buf) < len_prev_buf) { //clear the RAM of the previous write, but only if the number of chars written was greater than current
+				lcd_clear_n_chars(len_prev_buf);	
+			}
+			
+			lcd_output_text(lux_text_buffer);
+			len_prev_buf = strlen(lux_buf);
 		}
-		
 	}
 }
 
