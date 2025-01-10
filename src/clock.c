@@ -34,6 +34,8 @@ void hsi_init(void) {
 
 //initialize peripheral clocks: GPIOA/C/F, SYSCFG
 void peripheral_clk_init(void) {
+	RCC_AHB1ENR |= (1);			//DMA1 enable
+	
 	RCC_AHB2ENR |= (1 << 0); 	//GPIOA enable
 	RCC_AHB2ENR |= (1 << 1); 	//GPIOB enable
 	RCC_AHB2ENR |= (1 << 2); 	//GPIOC enable

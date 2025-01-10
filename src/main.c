@@ -107,6 +107,8 @@ void task1_handler(void *args) {
 	uint8_t i2c2_stage = I2C2_START_POLL;
 	uint32_t lux_data = 0;
 	
+	const TickType_t ticks_to_wait = pdMS_TO_TICKS(10);
+
 	while(1) {
 		gpio_led_off();
 		
@@ -116,13 +118,15 @@ void task1_handler(void *args) {
 		if (i2c2_stage == I2C2_POST_WRITE) { //read data
 			i2c2_stage = i2c2_read(4);			
 		}
-		if (xSemaphoreTake(p_dma_binary_semaphore, portMAX_DELAY) == pdPASS) { //process data but only if the dma interrupt gives the semaphore
+		
+		if (xSemaphoreTake(p_dma_binary_semaphore, ticks_to_wait) == pdPASS) { //process data but only if the dma interrupt gives the semaphore
 			lux_data = rawdata_to_lux(DMA1_WRITE_ADDRESS, again_low, atime_100ms);
 
 			xQueueSend(lux_data_queue, &lux_data, portMAX_DELAY);	//send the address of lux_data through the queue, but only if queue is not full
 
 			i2c2_stage = I2C2_START_POLL;
 		}
+		
 	}
 }
 
@@ -131,13 +135,16 @@ void task2_handler (void *args) {
 	lcd_text_buffer_t lux_text_buffer = {lux_buf};
 	uint32_t lux_data = 0;
 
+	const TickType_t ticks_to_wait = pdMS_TO_TICKS(10);
+
 	while(1) {	
 		gpio_led_on();
 		
-		if (xQueueReceive(lux_data_queue, &lux_data, portMAX_DELAY) == pdPASS) { //wait for queue to have data in it
+		if (xQueueReceive(lux_data_queue, &lux_data, ticks_to_wait) == pdPASS) { //wait for queue to have data in it
 			snprintf(lux_buf, 15, "%lu LUX", lux_data);
-			lcd_output_text(lux_text_buffer);
+			//lcd_output_text(lux_text_buffer);
 		}
+		
 	}
 }
 
@@ -145,8 +152,10 @@ void task2_handler (void *args) {
 void task3_handler (void *args) {
 	uint8_t lcd_backlight_brightness = 0xFF;
 
+	const TickType_t ticks_to_wait = pdMS_TO_TICKS(10);
+
 	while(1) {
-		if (xSemaphoreTake(p_button_binary_semaphore, portMAX_DELAY) == pdPASS) {	//take the semaphore and block if unable to
+		if (xSemaphoreTake(p_button_binary_semaphore, ticks_to_wait) == pdPASS) {	//take the semaphore and block if unable to
 			switch(lcd_backlight_brightness) {
 				case (0xFF):
 					lcd_backlight_brightness = 0x00;

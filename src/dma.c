@@ -12,7 +12,7 @@ Purpose: Configure DMA for I2C2 Reception.
 
 #include "dma.h"
 #include "i2c.h"
-#include "tcnt.h"
+#include "gpio.h"
 
 //semaphore to synchronize dma to task actions.
 extern SemaphoreHandle_t p_dma_binary_semaphore;
@@ -31,7 +31,7 @@ void dma1_ch5_init(void) {
 //occurs after 4 data transfers
 void DMA1_Stream5_IRQHandler(void) {
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;  //init a var to hold whether a higher priority task is being blocked by the button binary semaphore
-
+    //gpio_led_on();
     if (((DMA1_ISR >> 17) & 1) == 1) {    //if data done transferring, then give semaphore
         xSemaphoreGiveFromISR(p_dma_binary_semaphore, &xHigherPriorityTaskWoken); //give dma_binary_semaphore away
 
