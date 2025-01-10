@@ -5,30 +5,28 @@ A collection of programs, runnable on STM32L476 devices, to measure and display 
 ### Features  
 - Built around FreeRTOS, guaranteeing no light measurements are lost or are not displayed.  
 - LCD driver uses SPI @ 3MHz, guaranteeing quick display of light measurements to the LCD screen.  
-- SPI, I2C, etc. drivers are custom written from scratch in C.  
+- SPI, I2C, DMA, PWM, and LCD drivers are custom written from scratch in C.  
 
 ### Materials   
 - Nucleo-L476RG reference board   
 - Nokia 5110 LCD screen   
 - TSL2591 light sensor   
 
-### Build Guide
+### Build Guide  
 ```
 make all
 make install
 ```
 
-### Status 
-- Incomplete  
-
-### Testing
-[youtube link](youtube.com)   
+### See the Project In Action Here:
+[youtube link]([youtube.com](https://youtube.com/shorts/P6DdQoYQE1Y))   
 
 ### Lessons Learned
 - How to create applications that meet timing requirements using FreeRTOS.  
-- How to port FreeRTOS to a given MCU without using HAL/CMSIS.  
-- How to initialize and control SPI, I2C, and Timer (in counting and PWM modes) peripherals in ARM Cortex-M4 MCUs.
-- How to debug hard faults, bus faults, etc. using ARM Core registers and System Control Block registers.
+- How to use Queues and Semaphores to ensure secure inter-task and inter-ISR communications.  
+- How to port FreeRTOS to a given MCU without using HAL/CMSIS.   
+- How to initialize and control SPI, I2C, DMA, and Timer (counting and PWM mode) peripherals in ARM Cortex-M4 MCUs.  
+- How to debug hard faults, bus faults, etc. using ARM Core registers and System Control Block registers.  
 - How to write an LCD driver.
 - How to debug digital signals using oscilloscopes - see images below, along with explanations!
 
