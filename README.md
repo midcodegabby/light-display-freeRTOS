@@ -19,7 +19,7 @@ make install
 ```
 
 ### See the Project In Action Here:
-[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/QocB0GQwpBI/0.jpg)](https://www.youtube.com/watch?v=QocB0GQwpBI)
+[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/QocB0GQwpBI/maxresdefault.jpg)](https://www.youtube.com/watch?v=QocB0GQwpBI)
 
 ### Lessons Learned
 - How to create applications that meet timing requirements using FreeRTOS.  
