@@ -18,7 +18,7 @@ make all
 make install
 ```
 
-### See the Project In Action Here:
+### See the Project In Action Here (video link):
 [![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/QocB0GQwpBI/maxresdefault.jpg)](https://www.youtube.com/watch?v=QocB0GQwpBI)
 
 ### Lessons Learned
