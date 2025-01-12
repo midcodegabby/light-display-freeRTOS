@@ -1,6 +1,6 @@
 # Light Display FreeRTOS  
 ### Overview  
-A collection of programs, runnable on STM32L476 devices, to measure and display light measurements.    
+A collection of programs, built for STM32L476 microcontrollers, to measure and display light measurements.    
 
 ### Features  
 - Built around FreeRTOS, guaranteeing no light measurements are lost or are not displayed.  
