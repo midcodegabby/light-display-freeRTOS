@@ -33,7 +33,7 @@ void exti_disable(void) {
 void EXTI15_10_IRQHandler(void) {
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;  //init a var to hold whether a higher priority task is being blocked by the button binary semaphore
         xSemaphoreGiveFromISR(p_button_binary_semaphore, &xHigherPriorityTaskWoken); //give button_binary_semaphore away
-
+        
         EXTI_PR1 |= (1 << 13);  //clear pending interrupts on this line
 
         portYIELD_FROM_ISR(xHigherPriorityTaskWoken);   //force context switch to higher priority blocked task (if there is one)

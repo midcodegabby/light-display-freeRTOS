@@ -23,7 +23,7 @@ Date: 12/30/2024
 #define I2C2_TXDR (*((volatile uint32_t *) (I2C2 + 0x28)))
 
 #define TSL2591_ADDRESS (0x29U)
-#define TSL2591_DATA_REGISTER (0xB4U)
+#define TSL2591_DATA_REGISTER (0xB4U) 
 #define TSL2591_INIT_MESSAGE ((0xA0 << 8)|(0x03))
 
 #define I2C2_NBYTES (4U)

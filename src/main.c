@@ -83,13 +83,13 @@ int main(void) {
 	lux_data_queue = xQueueCreate(8, (size_t) 4); 		//create queue with 8 indeces, with each index having a max size of 4 bytes
 	configASSERT(lux_data_queue != NULL);
 
-	status = xTaskCreate( (TaskFunction_t) task1_handler, "lux_task", STACK_SIZE, NULL, 1, NULL);
+	status = xTaskCreate( (TaskFunction_t) task1_handler, "lux_task", STACK_SIZE, NULL, 3, NULL);
 	configASSERT(status == pdPASS);
 
-	status = xTaskCreate( (TaskFunction_t) task2_handler, "lcd_task", STACK_SIZE, NULL, 1, NULL);
+	status = xTaskCreate( (TaskFunction_t) task2_handler, "lcd_task", STACK_SIZE, NULL, 3, NULL);
 	configASSERT(status == pdPASS);
 
-	status = xTaskCreate( (TaskFunction_t) task3_handler, "lcd_task", STACK_SIZE, NULL, 1, NULL);
+	status = xTaskCreate( (TaskFunction_t) task3_handler, "misc_task", STACK_SIZE, NULL, 3, NULL);
 	configASSERT(status == pdPASS);
 
 	vTaskStartScheduler();
