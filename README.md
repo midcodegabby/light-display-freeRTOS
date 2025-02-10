@@ -18,6 +18,11 @@ make all
 make install
 ```
 
+### Test Guide
+- Run a seperate terminal with the following command to start: `make load`  
+- Then, in a seperate terminal, run the following command to read the value of the register 0x10000000: `./readreg.sh`
+- If you want to read the value of a different register, then change the `reg` value to your chosen memory address in readreg.sh.  
+
 ### See the Project In Action Here (video link):
 [![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/QocB0GQwpBI/maxresdefault.jpg)](https://www.youtube.com/watch?v=QocB0GQwpBI)
 
