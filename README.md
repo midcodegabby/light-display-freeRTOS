@@ -18,6 +18,10 @@ make all
 make install
 ```
 
+### Possible Future Improvements
+- Use task notifications instead of binary semaphores to reduce latency and memory usage
+- Use blocking takes (of notification/semaphore) that cause the scheduler to switch tasks upon blocking
+
 ### Test Guide
 - Run a seperate terminal with the following command to start: `make load`  
 - Then, in a seperate terminal, run the following command to read the value of the register 0x10000000: `./readreg.sh`
