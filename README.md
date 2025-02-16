@@ -21,6 +21,7 @@ make install
 ### Possible Future Improvements
 - Use task notifications instead of binary semaphores to [reduce latency and memory usage](https://www.freertos.org/Documentation/02-Kernel/02-Kernel-features/03-Direct-to-task-notifications/01-Task-notifications)  
 - Use blocking takes (of notification/semaphore) that cause the scheduler to switch tasks upon blocking
+- Change misc task priority to lowest WITHOUT starving it of CPU time
 
 ### Test Guide
 - Run a seperate terminal with the following command to start: `make load`  
